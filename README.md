@@ -14,7 +14,7 @@ Note: You can adjust health and weapon ammunition amounts on the main menu scree
 * **Yellow** - These aseroids can be bounced towards your opponent's side by shooting them (Hint: the laser weapon bounces them the farthest).
 * **Red** - Destroying (either by hitting or shooting) these bad boys will case you to loose 10 health-points.
 * **Green** - Destroying these asteroids will replenish 5 health-points.
-* **Blue** - Destroying these asteroids gives you one of the following power-ups:
+* **Blue** - Destroying these asteroids gives you one of the following power-ups for a short period of time:
 1) A speed increase.
 2) A fire-rate increase.
 3) A weapon damage increase.

@@ -2,7 +2,7 @@
 A simple 2-player game developed for my grade 10 computer science final summative project.
 
 ## Play the game
-Grab a friend and head to [here](https://alex-greff.github.io/phaser-1v1-game) to play in browser.
+Grab a friend and head [here](https://alex-greff.github.io/phaser-1v1-game) to play in browser.
 
 ## Game Objectives
 The goal of the game is to shoot your opponent down until their health depletes to 0.

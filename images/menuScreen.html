@@ -1,0 +1,232 @@
+<html>
+
+<body>
+    <script type="text/javascript" src="build/phaser.min.js"></script>
+    <script type="text/javascript" src="build/phaser.js"></script>
+    <script>
+
+        var game = new Phaser.Game(800, 600, Phaser.AUTO, 'phaser-example', {
+            preload: preload,
+            create: create,
+            update: update,
+            render: render
+        });
+        
+        //Buttons
+        var infoButton //Information Button
+        var controlsButton //Control Button
+        var startButton //Start Button
+        var bg //Background
+        
+        var plusButtonHealth 
+        var minusButtonHealth
+        var plusButtonOrb
+        var minusButtonOrb
+        var plusButtonLaser
+        var minusButtonLaser
+        var plusButtonMissile
+        var minusButtonMissile
+        
+        //Customization Buttons
+        var PlusHealth;
+        var MinusHealth;
+        var PlusOrb;
+        var MinusOrb;
+        var PlusLaser;
+        var MinusLaser;
+        var PlusMissile;
+        var MinusMissile;
+        
+        //Customization options
+        var healthMax = 100;
+        var orbMax = 9;
+        var laserMax = 5;
+        var missileMax = 2;
+        
+        //Display of Customization options
+        var healthConfig;
+        var orbConfig;
+        var laserConfig;
+        var missileConfig;
+        
+        //Animation effects
+        var hearts;
+        var orbs;
+        var lasers;
+        var missiles;
+        
+        //Save customizations to cookies
+        localStorage.setItem("health", healthMax);
+        localStorage.setItem("orbMax", orbMax);
+        localStorage.setItem("laserMax", laserMax);
+        localStorage.setItem("missileMax", missileMax);
+        
+        
+        
+        
+        
+        function preload() {
+            
+            //load buttons                                                      height, width (of each frame), # of frames  
+            game.load.spritesheet("startButtonSheet", "StartButton.png", 256, 80, 3); 
+            game.load.spritesheet("infoButtonSheet", "InfoButton.png", 256, 80, 3);
+            game.load.spritesheet("controlsButtonSheet", "ControlsButton.png", 256, 80, 3);
+            game.load.spritesheet("plusButtonSheet", "PlusButton.png", 50, 50, 3);
+            game.load.spritesheet("minusButtonSheet", "MinusButton.png", 50, 50, 3);
+            
+            //Load animation effects
+            game.load.spritesheet("heartsSheet", "Hearts.png", 30, 30, 5);
+            game.load.spritesheet("orbsSheet", "Orb_display.png",30,30,5);
+            game.load.spritesheet('lasersSheet', "Laser_display.png", 15, 30, 5);
+            game.load.spritesheet('missilesSheet', "Missile_display.png", 15, 30, 5);
+            
+            //load background
+            game.load.image("background", "StartScreen.png");
+            
+            
+        }
+
+        function create() {
+            //load background 
+            bg=game.add.sprite(0,0, "background");
+            
+            //add buttons on screen and set up the action click event
+            infoButton = game.add.button(10, 500, 'infoButtonSheet', InfoButtonClick, this, 2, 1, 0);
+            startButton = game.add.button(270, 500, 'startButtonSheet', StartButtonClick , this, 2, 1, 0);
+            controlsButton = game.add.button(536, 500, 'controlsButtonSheet', ControlsButtonClick, this, 2, 1, 0);
+            
+            plusButtonHealth = game.add.button(110, 10, 'plusButtonSheet', PlusButtonHealthClick, this, 2, 1, 0);
+            minusButtonHealth = game.add.button(10, 10, 'minusButtonSheet', MinusButtonHealthClick, this, 2, 1, 0)
+            //10 + 50 + 10 = 70
+            plusButtonOrb = game.add.button(110, 70, 'plusButtonSheet', PlusButtonOrbClick, this, 2, 1, 0);
+            minusButtonOrb = game.add.button(10, 70, 'minusButtonSheet', MinusButtonOrbClick, this, 2, 1, 0);
+            //70 + 50 + 10 = 130
+            plusButtonLaser = game.add.button(110, 130, 'plusButtonSheet', PlusButtonLaserClick, this, 2, 1, 0);
+            minusButtonLaser = game.add.button(10, 130, 'minusButtonSheet', MinusButtonLaserClick, this, 2, 1, 0);
+            //130 + 50 + 10 = 190
+            plusButtonMissile = game.add.button(110, 190, 'plusButtonSheet', PlusButtonMissileClick, this, 2, 1, 0);
+            minusButtonMissile = game.add.button(10, 190, 'minusButtonSheet', MinusButtonMissileClick, this, 2, 1, 0);
+            
+            
+            
+          //laserP1=game.add.sprite(110,100, "LaserP1Sheet");
+            //laserP1.animations.add("laserAnimation", [0,1,2,3,4], 7, true);
+        	//laserP1.animations.play("laserAnimation");
+        	
+        	//Load displayanimations
+        	hearts=game.add.sprite(55, 20, "heartsSheet");
+        	hearts.animations.add('heartsAnimation', [0,1,2,3,4], 8, true);
+        	hearts.animations.play('heartsAnimation');
+        	
+        	orbs=game.add.sprite(55, 80, "orbsSheet");
+        	orbs.animations.add('orbsAnimation', [0,1,2,3,4], 8, true);
+        	orbs.animations.play('orbsAnimation');
+        	
+        	lasers=game.add.sprite(60, 140, 'lasersSheet');
+        	lasers.animations.add('lasersAnimation', [0,1,2,3,4], 8, true);
+        	lasers.animations.play('lasersAnimation');
+        	
+        	missiles=game.add.sprite(60, 200, 'missilesSheet');
+        	missiles.animations.add('missilesAnimation', [0,1,2,3,4], 8, true);
+        	missiles.animations.play('missilesAnimation');
+        	
+        	//Config text
+        	healthConfig = game.add.text(85, 25, '' + healthMax, { font: '16px Stencil', fill: '#fff' });
+        	orbConfig = game.add.text(85, 85, '' + orbMax, { font: '16px Stencil', fill: '#fff' });
+        	laserConfig = game.add.text(85, 145, '' + laserMax, { font: '16px Stencil', fill: '#fff' });
+        	missileConfig = game.add.text(85, 205, '' + missileMax, { font: '16px Stencil', fill: '#fff' });
+        }
+
+        function update() {
+
+        }
+
+        function render() {
+
+        }
+        
+        
+//Button Clicks
+        function StartButtonClick (){
+            //Load the game window
+            window.location.href = "mainGame.html";
+        }
+        
+        function InfoButtonClick(){
+            //TODO: display info related sprites/text
+        }
+        
+        function ControlsButtonClick(){
+            //TODO: display controls related sprites/text
+        }
+        
+        function PlusButtonHealthClick(){
+        	if (healthMax + 10 >= 1){
+        		healthMax = healthMax + 10;
+                healthConfig.text = healthMax;
+                localStorage.setItem("health", healthMax);	
+        	}
+        }
+        
+        function MinusButtonHealthClick(){
+        	if (healthMax - 10 >= 1){
+        		healthMax = healthMax - 10;
+                healthConfig.text = healthMax;
+                localStorage.setItem("health", healthMax);	
+        	}
+        }
+        
+        function PlusButtonOrbClick(){
+        	if (orbMax + 3 >= 0){
+        		orbMax = orbMax + 3;
+                //It's 3 because I'm gonna make it so it shoots 3 orbs at a time;
+                orbConfig.text = orbMax;
+                localStorage.setItem("orbMax", orbMax);	
+        	}
+        }
+        
+        function MinusButtonOrbClick(){
+        	if (orbMax - 3 >= 0){
+        		orbMax = orbMax - 3;
+                orbConfig.text = orbMax;
+                localStorage.setItem("orbMax", orbMax);	
+        	}
+        }
+        
+        function PlusButtonLaserClick(){
+        	if (laserMax + 1 >= 0){
+        		laserMax = laserMax + 1;
+            	laserConfig.text = laserMax;
+                localStorage.setItem("laserMax", laserMax);	
+        	}
+        }
+        
+        function MinusButtonLaserClick(){
+        	if (laserMax - 1 >= 0){
+        		laserMax = laserMax - 1;
+            	laserConfig.text = laserMax;
+                localStorage.setItem("laserMax", laserMax);	
+        	}
+        }
+        
+        function PlusButtonMissileClick(){
+        	if (missileMax + 1 >= 0){
+        		missileMax = missileMax + 1;
+            	missileConfig.text = missileMax;
+                localStorage.setItem("missileMax", missileMax);	
+        	}
+        }
+        
+        function MinusButtonMissileClick(){
+        	if (missileMax - 1 >= 0){
+        		missileMax = missileMax - 1;
+            	missileConfig.text = missileMax;
+                localStorage.setItem("missileMax", missileMax);	
+        	}         
+        }
+        
+    </script>
+
+</body>
+
+</html>

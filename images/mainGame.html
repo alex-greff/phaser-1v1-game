@@ -1,0 +1,196 @@
+<html>
+
+<body>
+    <script type="text/javascript" src="build/phaser.min.js"></script>
+    <script type="text/javascript" src="build/phaser.js"></script>
+    <script>
+        var game = new Phaser.Game(800, 600, Phaser.AUTO, 'phaser-example', {
+            preload: preload,
+            create: create,
+            update: update,
+            render: render
+        });
+        
+        var bg;
+        var bgGUI;
+        
+        //Buttons
+        var pauseButton;
+        var popoutButton;
+        
+        var ShipPlayer1;
+        var orbP1;
+        var orbsP1;
+        
+        var laserP1;
+        var lasersP1;
+        
+       	//Power-up variables
+        var speedShip1 = 7;
+        var speedShip2 = 7;
+        //Ammount of time subtracted from default fire rate
+        var fireRateP1 = 0;
+        
+        var fireButtonOrbP1;
+        var fireButtonLaserP1;
+        
+        //Timers
+        var orbTimeP1 = 0;
+        var laserTimeP1 = 0;
+        
+        
+        //Text variables
+        var orbsLeftP1;
+        var lasersLeftP1;
+        
+      	//Retrieve variables from cookies
+        var health = localStorage.getItem("health");
+        var orbMax = localStorage.getItem("orbMax");
+        var laserMax = localStorage.getItem("laserMax");
+        var missileMax = localStorage.getItem("missileMax");
+
+        function preload() {
+        	 game.load.image("background" , "GameScreen.png"); //STILL FUCKS THE THING USE LOW QUALITY
+        	 game.load.image("backgroundGUI", "GameScreenGUI.png");
+        	 //Load Buttons
+        	 game.load.spritesheet("pauseButtonSheet", "PauseButton.png", 20, 20, 3);
+         	 game.load.spritesheet("popoutButtonSheet", "PopoutButton.png", 20, 20, 3);
+        	 
+        	 game.load.image("shipPlayer1Sheet" , "spaceship_p1.png");
+        	 
+        	 game.load.spritesheet("OrbP1", "Orb_p1.png",10,10,5);
+        	 game.load.spritesheet('LaserP1', 'Laser_p1.png', 10, 20, 5);
+        }
+
+        function create() {
+        	//Background
+        	bg=game.add.sprite(0,0, "background");
+        	
+            
+        	//Create orbs group
+        	orbsP1 = game.add.group();
+        	orbsP1.enableBody = true;
+        	orbsP1.physicsBodyType = Phaser.Physics.ARCADE;
+        	orbsP1.createMultiple(orbMax, 'OrbP1');
+        	orbsP1.callAll('animations.add', 'animations', 'orbAnimation', [0, 1, 2, 3, 4], 10, true);
+    		orbsP1.callAll('animations.play', 'animations', 'orbAnimation');
+        	orbsP1.setAll('outOfBoundsKill', true);
+        	orbsP1.setAll('checkWorldBounds', true);
+        	
+        	//Load Ships
+        	ShipPlayer1 = game.add.sprite(200, 400, "shipPlayer1Sheet");
+        	game.physics.enable(ShipPlayer1, Phaser.Physics.ARCADE);
+        	
+        	
+        	fireButtonOrbP1 = game.input.keyboard.addKey(Phaser.Keyboard.F);
+        	
+        	//Background GUI
+        	bgGUI=game.add.sprite(0,0, "backgroundGUI");
+        	
+        	//Create buttons
+        	pauseButton = game.add.button(0 + 10 - 5 , 300 + 10, "pauseButtonSheet", PauseButtonClick, this, 2, 1, 0);
+            game.scale.fullScreenScaleMode = Phaser.ScaleManager.EXACT_FIT;
+            popoutButton = game.add.button(0 + 10 -5, 300 - 30, "popoutButtonSheet", PopoutButtonClick, this, 2, 1, 0);
+        	
+            //Load text
+        	orbsLeftP1 = game.add.text(782, 540, '' + orbsP1.countDead(), { font: '12px Stencil', fill: '#fff' });
+        	
+        	
+        }
+
+        function update() {
+        //Fire weapons
+        
+			if (fireButtonOrbP1.isDown){
+				fireOrbP1();
+			}
+			
+		//Move player 1 ship	
+        	//Left
+            if(game.input.keyboard.isDown(Phaser.Keyboard.A)){
+                ShipPlayer1.x=ShipPlayer1.x-speedShip1;
+            }
+        	//Right
+            if(game.input.keyboard.isDown(Phaser.Keyboard.D)){
+                ShipPlayer1.x=ShipPlayer1.x+speedShip1;
+            }
+        	//Up
+            if(game.input.keyboard.isDown(Phaser.Keyboard.W)){
+                ShipPlayer1.y=ShipPlayer1.y-speedShip1;
+            }
+        	//Down
+            if(game.input.keyboard.isDown(Phaser.Keyboard.S)){
+                ShipPlayer1.y=ShipPlayer1.y+speedShip1;
+            }
+			
+		//Boundaries Ship 1
+        	//Left Side
+        	if (ShipPlayer1.x < 0){
+        		ShipPlayer1.x = 0;
+        	//Right Side
+        	}
+        	if (ShipPlayer1.x + 50 > 800){
+        		ShipPlayer1.x = 800 - 50;
+        	//Bottom
+        	}
+        	if (ShipPlayer1.y + 100 > 600){
+        		ShipPlayer1.y = 600 - 100;
+        	}
+        	//Middle
+        	if (ShipPlayer1.y < 300){
+        		ShipPlayer1.y = 300;
+        	}	
+        
+        //Text display
+        	orbsLeftP1.text = orbsP1.countDead();
+        	
+        }
+
+        function render() {
+
+        }
+        
+        //Full screen button click
+        function PopoutButtonClick() {
+
+            if (game.scale.isFullScreen){
+                game.scale.stopFullScreen();
+            }
+            else{
+                game.scale.startFullScreen(false);
+            }
+		}
+        
+        //Pause button click
+        function PauseButtonClick(){
+        	//TODO: ADD PAUSE BUTTON STUFF
+        }
+
+        
+        
+        function fireOrbP1 () {
+            orbP1 = orbsP1.getFirstExists(false);
+            
+			if (game.time.now > orbTimeP1){
+
+                if (orbP1){
+                	for (var i=0; i < 3; i++){
+                		//Generate number between -30 and 30;
+                		var orbRandom = Math.floor(Math.random()*30);
+                		orbRandom *= Math.floor(Math.random()*2) == 1 ? 1 : -1;
+                		
+                		orbP1 = orbsP1.getFirstExists(false);
+                		orbP1.reset(ShipPlayer1.x + 20, ShipPlayer1.y);
+                		orbP1.body.velocity.x = orbRandom;
+                        orbP1.body.velocity.y = -400;
+                        //Fire rate timer
+                        orbTimeP1 = game.time.now + 200 - fireRateP1;
+    				}
+                }
+			}
+        }
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,360 @@
+<!-- The title screen of this game. -->
+
+<html>
+
+<body>
+    <script type="text/javascript" src="build/phaser.min.js"></script>
+    <script type="text/javascript" src="build/phaser.js"></script>
+    <script>
+
+        var game = new Phaser.Game(800, 600, Phaser.AUTO, 'phaser-example', {
+            preload: preload,
+            create: create,
+            update: update,
+            render: render
+        });
+        
+        //Buttons
+        var infoButton; //Information Button
+        var controlsButton; //Control Button
+        var startButton; //Start Button
+        var popOutButton; //Fullscreen button
+        var bg; //Background
+       	        
+        var plusButtonHealth; 
+        var minusButtonHealth;
+        var plusButtonOrb;
+        var minusButtonOrb;
+        var plusButtonLaser;
+        var minusButtonLaser;
+        var plusButtonMissile;
+        var minusButtonMissile;
+        
+        //Customization Buttons
+        var PlusHealth;
+        var MinusHealth;
+        var PlusOrb;
+        var MinusOrb;
+        var PlusLaser;
+        var MinusLaser;
+        var PlusMissile;
+        var MinusMissile;
+        
+        //Customization options
+        var healthMax = 200;
+        var orbMax = 4;
+        var laserMax = 6;
+        var missileMax = 2;
+        
+        //Display of Customization options
+        var healthConfig;
+        var orbConfig;
+        var laserConfig;
+        var missileConfig;
+        
+        //Animation effects
+        var hearts;
+        var orbs;
+        var lasers;
+        var missiles;
+        
+        //Controls Button Sprites/Text
+        var backTileControls;
+        var TitleControls;
+
+        var ControlsP1Title;
+        var ControlsP2Title;
+        var ControlsP1;
+        var ControlsP2;
+        
+        //Info Button Sprites/Text
+        var backTileInfo;
+        var TitleInfo;
+        var StoryLine;
+        var Goal;
+        var MusicCreditsTitle;
+        var MuscicCredits;
+        
+        var AsteroidYellow;
+        var AsteroidBlue;
+        var AsteroidGreen;
+        var AsteroidRed;
+        
+        var AsteroidYellowText;
+        var AsteroidBlueText;
+        var AsteroidGreenText;
+        var AsteroidRedText;
+        
+        //Save customizations to cookies
+        localStorage.setItem("health", healthMax);
+        localStorage.setItem("orbMax", orbMax);
+        localStorage.setItem("laserMax", laserMax);
+        localStorage.setItem("missileMax", missileMax);
+        
+        //Other
+        var title;
+        var music;
+        
+        
+        function preload() {
+            
+            //Load buttons                                                      height, width (of each frame), # of frames  
+            game.load.spritesheet("startButtonSheet", "StartButton.png", 256, 80, 3); 
+            game.load.spritesheet("infoButtonSheet", "InfoButton.png", 256, 80, 3);
+            game.load.spritesheet("controlsButtonSheet", "ControlsButton.png", 256, 80, 3);
+            game.load.spritesheet("plusButtonSheet", "PlusButton.png", 50, 50, 3);
+            game.load.spritesheet("minusButtonSheet", "MinusButton.png", 50, 50, 3);
+            game.load.spritesheet("popoutButtonSheet", "PopoutButton.png", 20, 20, 3);
+            //Backtiles
+            game.load.image('BackTileInfoImg', 'BackTileInfo.png');
+            game.load.image('BackTileControlsImg', 'BackTileControls.png');
+            //Asteroids
+            game.load.image('AsteroidYellowImg', "Asteroid_1_yellow.png");
+            game.load.image('AsteroidBlueImg', "Asteroid_1_blue.png");
+            game.load.image('AsteroidGreenImg', "Asteroid_1_green.png");
+            game.load.image('AsteroidRedImg', "Asteroid_1_red.png");
+            
+			//Title
+			game.load.spritesheet('TitleSheet', 'Title.png', 250, 450, 10);
+			
+            //Load music
+            game.load.audio('music', 'MenuScreenMusic.mp3');
+            
+            //Load animation effects
+            game.load.spritesheet("heartsSheet", "Hearts.png", 30, 30, 5);
+            game.load.spritesheet("orbsSheet", "Orb_display.png",30,30,5);
+            game.load.spritesheet('lasersSheet', "Laser_display.png", 15, 30, 5);
+            game.load.spritesheet('missilesSheet', "Missile_display.png", 15, 30, 5);
+            
+            //load background
+            game.load.image("background", "StartScreen.png");
+            
+            
+        }
+
+        function create() {
+            //load background 
+            bg=game.add.sprite(0,0, "background");
+            
+            //Play music
+            music = game.add.audio('music',1,true);
+            music.play('',0,1,true);
+            
+            //add buttons on screen and set up the action click event
+            infoButton = game.add.button(10, 500, 'infoButtonSheet', InfoButtonClick, this, 2, 1, 0);
+            startButton = game.add.button(270, 500, 'startButtonSheet', StartButtonClick , this, 2, 1, 0);
+            controlsButton = game.add.button(536, 500, 'controlsButtonSheet', ControlsButtonClick, this, 2, 1, 0);
+            game.scale.fullScreenScaleMode = Phaser.ScaleManager.EXACT_FIT;
+            popoutButton = game.add.button(775, 5, "popoutButtonSheet", PopoutButtonClick, this, 2, 1, 0);
+            
+            plusButtonHealth = game.add.button(110, 10, 'plusButtonSheet', PlusButtonHealthClick, this, 2, 1, 0);
+            minusButtonHealth = game.add.button(10, 10, 'minusButtonSheet', MinusButtonHealthClick, this, 2, 1, 0)
+            //10 + 50 + 10 = 70
+            plusButtonOrb = game.add.button(110, 70, 'plusButtonSheet', PlusButtonOrbClick, this, 2, 1, 0);
+            minusButtonOrb = game.add.button(10, 70, 'minusButtonSheet', MinusButtonOrbClick, this, 2, 1, 0);
+            //70 + 50 + 10 = 130
+            plusButtonLaser = game.add.button(110, 130, 'plusButtonSheet', PlusButtonLaserClick, this, 2, 1, 0);
+            minusButtonLaser = game.add.button(10, 130, 'minusButtonSheet', MinusButtonLaserClick, this, 2, 1, 0);
+            //130 + 50 + 10 = 190
+            plusButtonMissile = game.add.button(110, 190, 'plusButtonSheet', PlusButtonMissileClick, this, 2, 1, 0);
+            minusButtonMissile = game.add.button(10, 190, 'minusButtonSheet', MinusButtonMissileClick, this, 2, 1, 0);
+            
+            //Create info sprites/text
+            backTileInfo = game.add.sprite(1000, 0, 'BackTileInfoImg');
+            AsteroidYellow = game.add.sprite(260,1000, 'AsteroidYellowImg');
+            AsteroidBlue = game.add.sprite(260, 1000, 'AsteroidBlueImg');
+            AsteroidGreen = game.add.sprite(260, 1000, 'AsteroidGreenImg');
+            AsteroidRed = game.add.sprite(260, 1000, 'AsteroidRedImg');
+            AsteroidYellowText = game.add.text(360, 1000, 'This asteroid does nothing but makes a \n great meatsheild to throw around!', { font: '9px Impact', fill: '#fff' });
+            AsteroidBlueText = game.add.text(360, 1000, 'Destroy this to recieve a powerup such as \n speed, firerate boost, weapon speed, or all!', { font: '9px Impact', fill: '#fff' });
+            AsteroidGreenText = game.add.text(360, 1000, 'Destroying this asteroid will give you a small \n health increase. Great for staying alive!', { font: '9px Impact', fill: '#fff' });
+            AsteroidRedText = game.add.text(360, 1000, 'Beware of this asteroid! If you destroy it the \n cost will be great!', { font: '9px Impact', fill: '#fff' });
+            TitleInfo = game.add.text(1000, 10, 'Information', { font: '24px Stencil', fill: '#00FFFF' });
+            StoryLine = game.add.text(265, 1000, 'Once a long time ago something was stolen from the \n Goswaminners and the Jeffs. It has been too long to remember \n who stole what but for their losses, the Goswaminners and the \n Jeffs blamed each other. A mighty battle raged for centuries \n until both sides had lost a great deal of people and their homes \n so much that they decided to end it once and for all! They \n decided to send two of their best pilots (one from each side) to \n battle it out in space near the asteriods and the winner will be \n awarded while the losing team is destroyed!', { font: '9px Batang', fill: '#00FFFF' });
+            MusicCreditsTitle = game.add.text(265, 1000, 'Music Credits:', { font: '16px Stencil', fill: '#FFFFFF' });
+            MusicCredits = game.add.text(260, 1000, ' F-777: www.jessevalentinemusic.bandcamp.com \n Im Cwazy: www.imcwazy.bandcamp.com \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n Created by Alex Greff and Harsh Goswami', { font: '12px Batang', fill: '#FFFFFF' });
+            // \n HammerLed: www.hammerled.bandcamp.com
+        	
+            //Create controls sprites/text
+            backTileControls = game.add.sprite(250, 1000, 'BackTileControlsImg');
+            TitleControls = game.add.text(340, 1000, 'Controls', { font: '24px Stencil', fill: '#FF0000' });
+            ControlsP1Title = game.add.text(265, 1000, 'Player 1 controls: ', { font: '16px Stencil', fill: '#FFFFFF' });
+            ControlsP1 = game.add.text(265, 1000, 'W = Move Up\nS = Move Down\nA= Move Left\nD= Move Right\n\nF = Fire Orb\nG = Fire Laser\nH = Fire Missile', { font: '12px Batang', fill: '#FFFFFF' });
+            ControlsP2Title = game.add.text(265, 1000, 'Player 2 controls: ', { font: '16px Stencil', fill: '#FFFFFF' });
+            ControlsP2 = game.add.text(265, 1000, 'P = Move Up\n; = Move Down\nL= Move Left\n" = Move Right\n\nRight Arrow = Fire Orb\nDown Arrow = Fire Laser\nLeft Arrow = Fire Missile', { font: '12px Batang', fill: '#FFFFFF' });
+            
+        	//Load display animations
+        	hearts=game.add.sprite(55, 20, "heartsSheet");
+        	hearts.animations.add('heartsAnimation', [0,1,2,3,4], 8, true);
+        	hearts.animations.play('heartsAnimation');
+        	
+        	orbs=game.add.sprite(55, 80, "orbsSheet");
+        	orbs.animations.add('orbsAnimation', [0,1,2,3,4], 8, true);
+        	orbs.animations.play('orbsAnimation');
+        	
+        	lasers=game.add.sprite(60, 140, 'lasersSheet');
+        	lasers.animations.add('lasersAnimation', [0,1,2,3,4], 8, true);
+        	lasers.animations.play('lasersAnimation');
+        	
+        	missiles=game.add.sprite(60, 200, 'missilesSheet');
+        	missiles.animations.add('missilesAnimation', [0,1,2,3,4], 8, true);
+        	missiles.animations.play('missilesAnimation');
+        	
+        	//Config text
+        	healthConfig = game.add.text(85, 25, '' + healthMax, { font: '16px Stencil', fill: '#fff' });
+        	orbConfig = game.add.text(85, 85, '' + orbMax, { font: '16px Stencil', fill: '#fff' });
+        	laserConfig = game.add.text(85, 145, '' + laserMax, { font: '16px Stencil', fill: '#fff' });
+        	missileConfig = game.add.text(85, 205, '' + missileMax, { font: '16px Stencil', fill: '#fff' });
+        	
+        	//The logo
+        	title = game.add.sprite(500, 10, 'TitleSheet');
+        	title.animations.add('titleAnimation', [0,1,2,3,4,5,6,7,8,9], 5, true);
+        	title.animations.play('titleAnimation');
+        	
+        }
+
+        function update() {
+
+        }
+
+        function render() {
+
+        }
+        
+        
+//Button Clicks
+		//Full screen button click
+        function PopoutButtonClick() {
+            if (game.scale.isFullScreen){
+                game.scale.stopFullScreen();
+            }
+            else{
+                game.scale.startFullScreen(false);
+            }
+		}
+		
+        function StartButtonClick (){
+            //Load the game window
+            window.location.href = "mainGame.html";
+        }
+        
+        function InfoButtonClick(){
+            //Remove Controls sprites/text
+            backTileControls.y = 1000;
+            TitleControls.y = 1000;
+            ControlsP1Title.y = 1000;
+            ControlsP1.y = 1000;
+            ControlsP2Title.y = 1000;
+            ControlsP2.y = 1000;
+            
+            //Add info sprites/text
+            backTileInfo.x = 250;
+            AsteroidYellow.y = 250;
+            AsteroidBlue.y = 300;
+            AsteroidGreen.y = 350;
+            AsteroidRed.y = 400;
+            AsteroidYellowText.y = 280;
+            AsteroidBlueText.y = 330;
+            AsteroidGreenText.y = 380;
+            AsteroidRedText.y = 430;
+            TitleInfo.x = 320;
+            StoryLine.y = 40;
+            MusicCreditsTitle.y = 180; 
+            MusicCredits.y = 200;
+            
+        }
+        
+        function ControlsButtonClick(){
+            //Remove Info sprites/text
+        	backTileInfo.x = 1000;
+            AsteroidYellow.y = 1000;
+            AsteroidBlue.y = 1000;
+            AsteroidGreen.y = 1000;
+            AsteroidRed.y = 1000;
+            AsteroidYellowText.y = 1000;
+            AsteroidBlueText.y = 1000;
+            AsteroidGreenText.y = 1000;
+            AsteroidRedText.y = 1000;
+           	TitleInfo.x = 1000;
+           	StoryLine.y = 1000;
+           	MusicCreditsTitle.y = 1000;
+           	MusicCredits.y = 1000;
+           	
+           	//Add controls sprites/text
+           	backTileControls.y = 0;
+            TitleControls.y = 10;
+            ControlsP1Title.y = 60;
+            ControlsP1.y = 80;
+            ControlsP2Title.y = 220;
+            ControlsP2.y = 240;
+        }
+        
+        function PlusButtonHealthClick(){
+        	if (healthMax + 10 >= 1){
+        		healthMax = healthMax + 10;
+                healthConfig.text = healthMax;
+                localStorage.setItem("health", healthMax);	
+        	}
+        }
+        
+        function MinusButtonHealthClick(){
+        	if (healthMax - 10 >= 1){
+        		healthMax = healthMax - 10;
+                healthConfig.text = healthMax;
+                localStorage.setItem("health", healthMax);	
+        	}
+        }
+        
+        function PlusButtonOrbClick(){
+        	if (orbMax + 1 >= 0){
+        		orbMax = orbMax + 1;
+                orbConfig.text = orbMax;
+                localStorage.setItem("orbMax", orbMax);	
+        	}
+        }
+        
+        function MinusButtonOrbClick(){
+        	if (orbMax - 1 >= 0){
+        		orbMax = orbMax - 1;
+                orbConfig.text = orbMax;
+                localStorage.setItem("orbMax", orbMax);	
+        	}
+        }
+        
+        function PlusButtonLaserClick(){
+        	if (laserMax + 1 >= 0){
+        		laserMax = laserMax + 1;
+            	laserConfig.text = laserMax;
+                localStorage.setItem("laserMax", laserMax);	
+        	}
+        }
+        
+        function MinusButtonLaserClick(){
+        	if (laserMax - 1 >= 0){
+        		laserMax = laserMax - 1;
+            	laserConfig.text = laserMax;
+                localStorage.setItem("laserMax", laserMax);	
+        	}
+        }
+        
+        function PlusButtonMissileClick(){
+        	if (missileMax + 1 >= 0){
+        		missileMax = missileMax + 1;
+            	missileConfig.text = missileMax;
+                localStorage.setItem("missileMax", missileMax);	
+        	}
+        }
+        
+        function MinusButtonMissileClick(){
+        	if (missileMax - 1 >= 0){
+        		missileMax = missileMax - 1;
+            	missileConfig.text = missileMax;
+                localStorage.setItem("missileMax", missileMax);	
+        	}         
+        }
+        
+    </script>
+
+</body>
+
+</html>

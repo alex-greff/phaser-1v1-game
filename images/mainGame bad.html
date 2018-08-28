@@ -1,0 +1,307 @@
+<html>
+
+<body>
+    <script type="text/javascript" src="build/phaser.min.js"></script>
+    <script type="text/javascript" src="build/phaser.js"></script>
+    <script>
+        var game = new Phaser.Game(800, 600, Phaser.AUTO, 'phaser-example', {
+            preload: preload,
+            create: create,
+            update: update,
+            render: render
+        });
+        
+        var bg;
+        
+        //Buttons
+        var pauseButton;
+        var popoutButton;
+        var resumeButton;
+        var replayButton;
+        var menuButton;
+        
+        //Ship Variables
+        var ShipPlayer1;
+        var ShipPlayer2;
+        
+        //Astroid Variables
+        var AsteroidYellow1;
+        var AsteroidRed1;
+        var AsteroidBlue1;
+        var AsteroidGreen1;
+        var AsteroidYellow2;
+        var AsteroidRed2;
+        var AsteroidBlue2;
+        var AsteroidGreen2;
+        
+        //weapons
+        var laserP1;
+        var laserP2;
+        var orbP1;
+        var orbP2;
+        var missileP1;
+        var missileP2;
+        
+        //sound effects for game
+        var laserFire;
+        var laserImpact;
+        var explosion;
+        var MissileFire;
+        var orbFire;
+        var orbImpact;
+        
+        //Speed
+        var speedShip1 = 7;
+        var speedShip2 = 7; 
+        
+        //Firing Keys
+        var keyF;
+        
+        //Bullets left
+        var orbAmmount = 0;
+        var laserAmmount = 0;
+        var missileAmmount = 0;
+        
+        //Groups
+        var orbP1Group;
+        
+        //Variables retrieved from cookies
+        var health = localStorage.getItem("health");
+        var orbMax = localStorage.getItem("orbMax");
+        var laserMax = localStorage.getItem("laserMax");
+        var missileMax = localStorage.getItem("missileMax");
+
+      	
+        
+        function preload() {
+            game.load.image("background" , "GameScreen.png"); //STILL FUCKS THE THING USE LOW QUALITY
+            
+            //Sound Effects
+          	//game.load.audio("ExplosionSfx", "assets/SoundEffects/Explosion.mp3");
+        	//game.load.audio("LaserFireSfx" , "assets/SoundEffects/LaserFire.mp3");
+         	//game.load.audio("LaserImpactSfx","assets/SoundEffects/LaserImpact.mp3");
+         	//game.load.audio("MissileFireSfx","assets/SoundEffects/MissileFire.mp3");
+         	//game.load.audio("OrbFireSfx","assets/SoundEffects/OrbFire.mp3");
+          	//game.load.audio("OrbImpactSfx" , "assets/SoundEffects/OrbImpact.mp3");
+            
+            //Load Buttons
+            game.load.spritesheet("pauseButtonSheet", "PauseButton.png", 20, 20, 3);
+            game.load.spritesheet("popoutButtonSheet", "PopoutButton.png", 20, 20, 3);
+            game.load.spritesheet("resumeButtonSheet", "assets/Buttons/ResumeButton.png", 256, 256, 3);
+            game.load.spritesheet("replayButtonSheet", "assets/Buttons/ReplayButton.png", 256, 256, 3);
+            game.load.spritesheet("menuButtonSheet", "assets/Buttons/MenuButton.png", 256, 80, 3);
+            
+            //Load Ship ship sprites TODO: MIGHT ADD ANIMATIONS
+            game.load.image("shipPlayer1Sheet" , "spaceship_p1.png");
+            game.load.image('shipPlayer2Sheet' , 'spaceship_p2.png');
+            //Load Weapon sprites
+            game.load.spritesheet("OrbP1Sheet", "Orb_p1.png",10,10,5);
+            game.load.spritesheet("OrbP2Sheet", "Orb_p2.png",10,10,5);
+            game.load.spritesheet("LaserP1Sheet", "Laser_p1.png",10,20,5);
+            game.load.spritesheet("LaserP2Sheet", "Laser_p2.png",10,20,5);
+            game.load.spritesheet("MissileP1Sheet", "Missile_p1.png",15,30,5);
+            game.load.spritesheet("MissileP2Sheet", "Missile_p2.png",15,30,5);
+            
+            //Load Asteroid sprites TODO: MIGHT ADD ANIMATIONS
+            //game.load.spritesheet("AsteroidBlue1Sheet", "assets/Asteroids/Asteroid_1_blue.png", 200, 157, 1);
+            //game.load.spritesheet("AsteroidGreen1Sheet", "assets/Asteroids/Asteroid_1_green.png", 200, 157, 1);
+            //game.load.spritesheet("AsteroidRed1Sheet", "assets/Asteroids/Asteroid_1_red.png", 200, 157, 1);
+            //game.load.spritesheet("AsteroidYellow1Sheet", "assets/Asteroids/Asteroid_1_yellow.png", 200, 157, 1);
+            //game.load.spritesheet("AsteroidBlue2Sheet", "assets/Asteroids/Asteroid_2_blue.png", 200, 200, 1);
+            //game.load.spritesheet("AsteroidGreen2Sheet", "assets/Asteroids/Asteroid_2_green.png", 200, 200, 1);
+            //game.load.spritesheet("AsteroidRed2Sheet", "assets/Asteroids/Asteroid_2_red.png", 200, 200, 1);
+            //game.load.spritesheet("AsteroidYellow2Sheet", "assets/Asteroids/Asteroid_2_yellow.png", 200, 200, 1);
+
+        }
+
+        function create() {
+            bg=game.add.sprite(0,0, "background");
+            pauseButton = game.add.button(0 + 10 - 5 , 300 + 10, "pauseButtonSheet", PauseButtonClick, this, 2, 1, 0);
+            game.scale.fullScreenScaleMode = Phaser.ScaleManager.EXACT_FIT;
+            popoutButton = game.add.button(0 + 10 -5, 300 - 30, "popoutButtonSheet", PopoutButtonClick, this, 2, 1, 0);
+            
+            ShipPlayer2 = game.add.sprite(200, 200, "shipPlayer2Sheet");
+            ShipPlayer1 = game.add.sprite(200, 400, "shipPlayer1Sheet");
+            
+            
+        	//orbP1Group = game.add.group(); 
+            
+		//Orb Animations
+            //orbP1=game.add.sprite(200, 200, "OrbP1Sheet");
+			orbP1Group = game.add.group();
+			//orbP1Group.enableBody = true;
+			//orbP1Group.physicsBodyType = Phaser.Physics.ARCADE;
+			orbP1Group.createMultiple(30, "OrbP1Sheet");
+			orbP1Group.setAll("outOfBoundsKill", true);
+			orbP1Group.setAll("checkWorldBounds", true);
+            //orbP1.animations.add("orbAnimation", [0,1,2,3,4], 30, true);
+            //orbP1.animations.play("orbAnimation");
+            
+            //orbP2=game.add.sprite(200, 200, "OrbP2Sheet");
+            //orbP2.animations.add("orbAnimation", [0,1,2,3,4], 30, true);
+            //orbP2.animations.play("orbAnimation");
+            
+
+            
+        
+        //Laser Animations
+        	//laserP1=game.add.sprite(110,100, "LaserP1Sheet");
+            laserP1.animations.add("laserAnimation", [0,1,2,3,4], 7, true);
+        	laserP1.animations.play("laserAnimation");
+        	//laserP2=game.add.sprite(210,200, "LaserP2Sheet");
+        	laserP2.animations.add("laserAnimation", [0,1,2,3,4], 7, true);
+        	laserP2.animations.play("laserAnimation");    
+        
+        //Missile Animations
+        	//missileP1=game.add.sprite(330,330,"MissileP1Sheet");
+        	missileP1.animations.add("missileAnimation", [0,1,2,3,4], 5, true);
+        	missileP1.animations.play("missileAnimation");
+        	//missileP2=game.add.sprite(400,400,"MissileP2Sheet");
+        	missileP2.animations.add("missileAnimation", [0,1,2,3,4], 5, true);
+        	missileP2.animations.play("missileAnimation");
+        	
+        	
+            //game.input.onDown.add(PopoutButtonClick, this);
+        }
+
+        function resetOrb (orbP1Group) {
+
+            //  Called if the bullet goes out of the screen
+            orbP1Group.kill();
+            orbAmmount - 1;
+
+        }
+        
+        function update() {
+        	
+        //Move player 1 ship	
+        	//Left
+            if(game.input.keyboard.isDown(Phaser.Keyboard.A)){
+                ShipPlayer1.x=ShipPlayer1.x-speedShip1;
+            }
+        	//Right
+            if(game.input.keyboard.isDown(Phaser.Keyboard.D)){
+                ShipPlayer1.x=ShipPlayer1.x+speedShip1;
+            }
+        	//Up
+            if(game.input.keyboard.isDown(Phaser.Keyboard.W)){
+                ShipPlayer1.y=ShipPlayer1.y-speedShip1;
+            }
+        	//Down
+            if(game.input.keyboard.isDown(Phaser.Keyboard.S)){
+                ShipPlayer1.y=ShipPlayer1.y+speedShip1;
+            }	
+        
+        //Move player 2 ship 
+        	//Left
+            if(game.input.keyboard.isDown(Phaser.Keyboard.L)){
+                ShipPlayer2.x=ShipPlayer2.x-speedShip2;
+            }
+        	//Right
+            if(game.input.keyboard.isDown(Phaser.Keyboard.QUOTES)){
+                ShipPlayer2.x=ShipPlayer2.x+speedShip2;
+            }
+        	//Up
+            if(game.input.keyboard.isDown(Phaser.Keyboard.P)){
+                ShipPlayer2.y=ShipPlayer2.y-speedShip2;
+            }
+        	//Down
+            if(game.input.keyboard.isDown(Phaser.Keyboard.COLON)){
+                ShipPlayer2.y=ShipPlayer2.y+speedShip2;
+            }
+        	
+        //Fire Event Ship 1
+        	//Fire Orbs
+        	keyF = game.input.keyboard.addKey(Phaser.Keyboard.F);
+    		keyF.onDown.add(addOrbP1, this);
+        	
+        //Boundaries Ship 1
+        	//Left Side
+        	if (ShipPlayer1.x < 0){
+        		ShipPlayer1.x = 0;
+        	//Right Side
+        	}
+        	if (ShipPlayer1.x + 50 > 800){
+        		ShipPlayer1.x = 800 - 50;
+        	//Bottom
+        	}
+        	if (ShipPlayer1.y + 100 > 600){
+        		ShipPlayer1.y = 600 - 100;
+        	}
+        	//Middle
+        	if (ShipPlayer1.y < 300){
+        		ShipPlayer1.y = 300;
+        	}
+        	
+        //Boundaries Ship 2
+        	//Left Side
+			if (ShipPlayer2.x < 0){
+				ShipPlayer2.x = 0;
+			}
+        	//Right Side
+        	if (ShipPlayer2.x + 50 > 800){
+        		ShipPlayer2.x = 800 - 50;
+        	}
+        	//Top
+        	if (ShipPlayer2.y < 0){
+        		ShipPlayer2.y = 0;
+        	}
+        	//Middile
+        	if (ShipPlayer2.y + 100 > 300){
+        		ShipPlayer2.y = 300 - 100
+        	}
+        	
+        	//if (orb.x = null){
+        		
+        	//}
+       //Weapon Collisions
+       			if (orbP1.x < 0){
+       				//orbP1.body.velocity.y=orbP1.body.velocity.y * -1;
+       				orbP1.y = 600
+       				//orbP1.body.velocity.x=orbP1.body.velocity.x * -1;
+       			}
+       	 	
+        }
+
+        function render() {
+            
+            
+        }
+        
+        function PopoutButtonClick() {
+
+            if (game.scale.isFullScreen){
+                game.scale.stopFullScreen();
+            }
+            else{
+                game.scale.startFullScreen(false);
+            }
+		}
+        
+        function PauseButtonClick(){
+        	//TODO: ADD PAUSE BUTTON STUFF
+        }
+        
+        function addOrbP1(){
+        	
+        	if (orbAmmount < orbMax){
+        		orbAmmount = orbAmmount + 1;
+        		
+        		//Loop 3 times
+	        	
+        		orbP1=game.add.sprite(ShipPlayer1.x+25, ShipPlayer1.y, "OrbP1Sheet");
+	        	orbP1.animations.add("orbAnimation", [0,1,2,3,4], 30, true);
+	        	orbP1.animations.play("orbAnimation");
+	        	//orbP1Group.add(orbP1);
+	        	
+	        	game.physics.enable(orbP1, Phaser.Physics.ARCADE);
+	        	orbP1.body.velocity.y=-200;
+        	}
+        }
+        
+        
+    </script>
+
+</body>
+
+</html>

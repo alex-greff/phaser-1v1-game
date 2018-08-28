@@ -1,0 +1,1604 @@
+<!-- This is the place where the game actually happens -->
+<!-- Members: Alex Greff, Harsh Goswami -->
+<!-- Date 15/01/2015 -->
+
+<html>
+
+<body>
+    <script type="text/javascript" src="build/phaser.min.js"></script>
+    <script type="text/javascript" src="build/phaser.js"></script>
+    <script>
+        var game = new Phaser.Game(800, 600, Phaser.AUTO, 'phaser-example', {
+            preload: preload,
+            create: create,
+            update: update,
+            render: render
+        });
+        
+      	//Retrieve variables from cookies
+        var health = localStorage.getItem("health");
+        var orbMax = localStorage.getItem("orbMax");
+        var laserMax = localStorage.getItem("laserMax");
+        var missileMax = localStorage.getItem("missileMax");
+        
+		//Win variables
+        var P1Win = 0;
+        var P2Win = 0;
+        
+        var P1WinAmmount = localStorage.getItem('P1WinAmmount');
+        var P2WinAmmount = localStorage.getItem('P2WinAmmount');
+        localStorage.setItem("P1Win", P1Win);
+        localStorage.setItem("P2Win", P2Win);
+        
+        //Background
+        var bg;
+        var bgGUI;
+        
+        //Animation groups
+        var explosions;
+        var explosions2;
+        var shipSpeeds;
+        var fireRates;
+        var weaponSpeeds;
+        
+        //Health variables
+        var healthP1 = health;
+        var healthP2 = health;
+        
+        //Buttons
+        var pauseButton;
+        var replayButton;
+       	var resumeButton;
+        var menuButton;
+        var popoutButton;
+        
+        //Pause safeties
+        var paused = false;
+        var pauseBackTile;
+        
+        //Game over safeties
+        var gameOver = false;
+      	var gameOverImage;
+        
+        //Player's ships variables
+        var ShipPlayer1;
+        var ShipPlayer2;
+        
+        //Asteroid groups
+        var asteroidsYellow1;
+        var asteroidsBlue1;
+        var asteroidsGreen1;
+        var asteroidsRed1;
+		var asteroidsYellow2;
+		var asteroidsBlue2;
+		var asteroidsGreen2;
+		var asteroidsRed2;
+        
+		//Weapon damage
+        var orbDamageP1 = 1;
+        var orbDamageP2 = 1;
+        var laserDamageP1 = 5;
+        var laserDamageP2 = 5;
+        var missileDamageP1 = 30;
+        var missileDamageP2 = 30;
+        
+        //Weapon groups
+        var orbsP1;
+        var orbsP2;
+        var lasersP1;
+        var lasersP2;
+        var missilesP1;
+        var missilesP2;
+        
+       	//Power-up variables
+        var speedShip1 = 300;
+        var speedShip2 = 300;
+        
+        //% off the fire rate
+        var fireRateP1 = 0;
+        var fireRateP2= 0;
+        
+        //% added weapon speed
+        var weaponSpeedP1 = 0;
+        var weaponSpeedP2 = 0;
+        
+        //Keyboard mapping
+        var fireButtonOrbP1;
+        var fireButtonLaserP1;
+        var fireButtonMissileP1;
+        var fireButtonOrbP2;
+        var fireButtonLaserP2;
+        var fireButtonMissileP2;
+        
+        //Timers
+        var timer;
+        var orbTimeP1 = 0;
+        var laserTimeP1 = 0;
+        var missileTimeP1 = 0;
+        var orbTimeP2 = 0;
+        var laserTimeP2 = 0;
+        var missileTimeP2 = 0;
+        
+        //Text variables
+        var orbsLeftP1;
+        var lasersLeftP1;
+        var missilesLeftP1;
+        var orbsLeftP2;
+        var lasersLeftP2;
+        var missilesLeftP2;
+        var healthTextP1;
+        var healthTextP2;
+        
+        //Sound Effect variables
+        var orbFire;
+        var laserFire;
+        var missileFire;
+        var shipImpact;
+        var asteroidImpact;
+        var explosionSound;
+        
+      	//Test variables
+      	var Asteroid;
+      	var PowerUpTypeP1;
+      	var PowerUpTypeP2;
+		
+      	//Music
+      	var music;
+      	
+      	//Power up timers
+      	//var speedShipP1Timer;
+      	//var fireRateP1Timer;
+      	//var weaponSpeedP1Timer;
+      	//var speedShipP2Timer;
+      	//var fireRateP2Timer;
+      	//var weaponSpeedP2Timer;
+      	var timerPowerUpsP1;
+      	var timerPowerUpsP2;
+      	
+        function preload() {
+        	 //Load background
+        	 game.load.image("background" , "GameScreen.png"); 
+        	 game.load.image("backgroundGUI", "GameScreenGUI.png");
+        	 
+        	 //Load Buttons
+        	 game.load.spritesheet("pauseButtonSheet", "PauseButton.png", 20, 20, 3);
+         	 game.load.spritesheet("popoutButtonSheet", "PopoutButton.png", 20, 20, 3);
+          	 game.load.spritesheet('ReplayButtonSheet', 'ReplayButton.png', 256, 256, 3);
+       	 	 game.load.spritesheet('MenuButtonSheet', 'MenuButton.png', 256, 80, 3);
+       	 	 game.load.spritesheet('ResumeButtonSheet', 'ResumeButton.png', 256, 256, 3);
+        	 
+        	 game.load.image("shipPlayer1Sheet" , "spaceship_p1.png");
+        	 game.load.image('shipPlayer2Sheet', 'spaceship_p2.png');
+        	 
+        	 //Load explosions
+        	 game.load.spritesheet('explosion1Sheet', 'explosion_1.png', 64, 64, 25);
+        	 game.load.spritesheet('explosion2Sheet', 'explosion_2.png', 100, 100, 16);
+        	 
+        	 //Load weapon spritesheets
+        	 game.load.spritesheet("OrbP1", "Orb_p1.png",10,10,5);
+        	 game.load.spritesheet("LaserP1", "Laser_p1.png", 10, 20, 5);
+        	 game.load.spritesheet("MissileP1", "Missile_p1.png", 15, 30, 5);
+        	 game.load.spritesheet('OrbP2', 'Orb_p2.png', 10, 10, 5);
+        	 game.load.spritesheet('LaserP2', 'Laser_p2.png', 10, 20, 5);
+        	 game.load.spritesheet('MissileP2', 'Missile_p2.png', 15, 30, 5);
+        	 
+        	 //Load Sound Effects
+        	 game.load.audio('OrbFireSfx', 'OrbFire.ogg');
+        	 game.load.audio('LaserFireSfx', 'LaserFire.ogg');
+        	 game.load.audio('MissileFireSfx', 'MissileFire.ogg');
+        	 game.load.audio('ShipImpactSfx', 'ShipImpact.ogg');
+        	 game.load.audio('AsteroidImpactSfx', 'AsteroidImpact.ogg');
+        	 game.load.audio('ExplosionSfx', 'Explosion.ogg');
+        	 
+        	 //Load music
+        	 game.load.audio('music', 'MainGameMusic.mp3');
+        	 
+        	 //Load asteroids
+        	 game.load.image("AsteroidYellow1", 'Asteroid_1_yellow.png');
+        	 game.load.image("AsteroidBlue1", 'Asteroid_1_blue.png');
+        	 game.load.image("AsteroidGreen1", 'Asteroid_1_green.png');
+        	 game.load.image("AsteroidRed1", 'Asteroid_1_red.png');
+        	 
+        	 game.load.image("AsteroidYellow2", 'Asteroid_2_yellow.png');
+        	 game.load.image("AsteroidBlue2", 'Asteroid_2_blue.png');
+        	 game.load.image("AsteroidGreen2", 'Asteroid_2_green.png');
+        	 game.load.image("AsteroidRed2", 'Asteroid_2_red.png');
+        	 
+        	 //Other 
+        	 game.load.spritesheet('GameOverSheet', 'GameOver.png', 300, 100, 8);
+        	 game.load.image('PauseBackTile', 'BackTileControls.png');
+        }
+
+        function create() {
+        //Set pysics
+        	game.physics.startSystem(Phaser.Physics.ARCADE);
+        	
+        //Background
+        	bg=game.add.sprite(0,0, "background");
+        
+        //Play music
+            music = game.add.audio('music',1,true);
+            music.play('',0,1,true);
+        
+        //Load Ships
+        	ShipPlayer1 = game.add.sprite(400 - 25, 450, "shipPlayer1Sheet"); //TODO: center ship position
+        	game.physics.enable(ShipPlayer1, Phaser.Physics.ARCADE);
+        	ShipPlayer2 = game.add.sprite(400 - 25, 50, 'shipPlayer2Sheet');
+        	game.physics.enable(ShipPlayer2, Phaser.Physics.ARCADE);
+        
+        //Background GUI
+        	bgGUI=game.add.sprite(0,0, "backgroundGUI");
+        
+        //Create orbs group
+        	orbsP1 = game.add.group();
+        	orbsP1.enableBody = true;
+        	orbsP1.physicsBodyType = Phaser.Physics.ARCADE;
+        	orbsP1.createMultiple(orbMax, 'OrbP1');
+        	orbsP1.callAll('animations.add', 'animations', 'orbAnimation', [0, 1, 2, 3, 4], 10, true);
+    		orbsP1.callAll('animations.play', 'animations', 'orbAnimation');
+        	orbsP1.setAll('outOfBoundsKill', true);
+        	orbsP1.setAll('checkWorldBounds', true);
+        	
+        	orbsP2 = game.add.group();
+        	orbsP2.enableBody = true;
+        	orbsP2.physicsBodyType = Phaser.Physics.ARCADE;
+        	orbsP2.createMultiple(orbMax, 'OrbP2');
+        	orbsP2.callAll('animations.add', 'animations', 'orbAnimation', [0, 1, 2, 3, 4], 10, true);
+    		orbsP2.callAll('animations.play', 'animations', 'orbAnimation');
+        	orbsP2.setAll('outOfBoundsKill', true);
+        	orbsP2.setAll('checkWorldBounds', true);
+        	
+        //Create lasers group
+        	lasersP1 = game.add.group();
+        	lasersP1.enableBody = true;
+        	lasersP1.physicsBodyType = Phaser.Physics.ARCADE;
+        	lasersP1.createMultiple(laserMax, 'LaserP1');
+        	lasersP1.callAll('animations.add', 'animations', 'laserAnimation', [0,1,2,3,4], 7, true);
+        	lasersP1.callAll('animations.play', 'animations', 'laserAnimation'); 
+        	lasersP1.setAll('outOfBoundsKill', true);
+        	lasersP1.setAll('checkWorldBounds', true);
+        	
+        	lasersP2 = game.add.group();
+        	lasersP2.enableBody = true;
+        	lasersP2.physicsBodyType = Phaser.Physics.ARCADE;
+        	lasersP2.createMultiple(laserMax, 'LaserP2');
+        	lasersP2.callAll('animations.add', 'animations', 'laserAnimation', [0,1,2,3,4], 7, true);
+        	lasersP2.callAll('animations.play', 'animations', 'laserAnimations');
+        	lasersP2.setAll('outOfBoundsKill', true);
+        	lasersP2.setAll('checkWorldBounds', true);
+        	
+        //Create missiles group
+        	missilesP1 = game.add.group();
+        	missilesP1.enableBody = true;
+        	missilesP1.physicsBodyType = Phaser.Physics.ARCADE;
+        	missilesP1.createMultiple(missileMax, 'MissileP1');
+        	missilesP1.callAll('animations.add', 'animations', 'missileAnimation', [0,1,2,3,4], 5, true);
+        	missilesP1.callAll('animations.play', 'animations', 'missileAnimation');
+        	missilesP1.setAll('outOfBoundsKill', true);
+        	missilesP1.setAll('checkWorldBounds', true);
+        	
+        	missilesP2 = game.add.group();
+        	missilesP2.enableBody = true;
+        	missilesP2.physicsBodyType = Phaser.Physics.ARCADE;
+        	missilesP2.createMultiple(missileMax, 'MissileP2');
+        	missilesP2.callAll('animations.add', 'animations', 'missileAnimation', [0,1,2,3,4], 5, true);
+        	missilesP2.callAll('animations.play', 'animations', 'missileAnimation');
+        	missilesP2.setAll('outOfBoundsKill', true);
+        	missilesP2.setAll('checkWorldBounds', true);
+        	
+		//Map fire buttons      	
+        	fireButtonOrbP1 = game.input.keyboard.addKey(Phaser.Keyboard.F);
+        	fireButtonLaserP1 = game.input.keyboard.addKey(Phaser.Keyboard.G);
+        	fireButtonMissileP1 = game.input.keyboard.addKey(Phaser.Keyboard.H);
+        	fireButtonOrbP2 = game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
+        	fireButtonLaserP2 = game.input.keyboard.addKey(Phaser.Keyboard.DOWN);
+        	fireButtonMissileP2 = game.input.keyboard.addKey(Phaser.Keyboard.RIGHT);
+        
+        //Create buttons
+        	pauseButton = game.add.button(0 + 10 - 5 , 300 + 10, "pauseButtonSheet", PauseButtonClick, this, 2, 1, 0);
+            game.scale.fullScreenScaleMode = Phaser.ScaleManager.EXACT_FIT;
+            popoutButton = game.add.button(0 + 10 -5, 300 - 30, "popoutButtonSheet", PopoutButtonClick, this, 2, 1, 0);
+        	
+        //Load text
+        	orbsLeftP1 = game.add.text(782, 540, '' + orbsP1.countDead(), { font: '12px Stencil', fill: '#fff' });
+        	lasersLeftP1 = game.add.text(782, 555, '' + lasersP1.countDead(), { font: '12px Stencil', fill: '#fff' });
+        	missilesLeftP1 = game.add.text(782, 573, '' + missilesP1.countDead(), { font: '12px Stencil', fill: '#fff' });
+        	orbsLeftP2 = game.add.text(23, 10, '' + orbsP2.countDead(), { font: '12px Stencil', fill: '#fff' });
+        	lasersLeftP2 = game.add.text(23, 23, '' + lasersP2.countDead(), { font: '12px Stencil', fill: '#fff' });
+        	missilesLeftP2 = game.add.text(23, 42, '' + missilesP2.countDead(), { font: '12px Stencil', fill: '#fff' });
+        	healthTextP1 = game.add.text(37, 570, '' + healthP1, { font: '16px Stencil', fill: '#fff' });
+        	healthTextP2 = game.add.text(757, 10, '' + healthP2, { font: '16px Stencil', fill: '#fff' });
+        	PowerUpTypeP1 = game.add.text(10, 547, 'None', { font: '12px Stencil', fill: '#C0C0C0' });
+      		PowerUpTypeP2 = game.add.text(725, 40, 'None', { font: '12px Stencil', fill: '#C0C0C0', align: 'center' });
+      		
+      	//Create asteroid groups
+        	asteroidsYellow1 = game.add.group();
+        	asteroidsYellow1.enableBody = true;
+        	asteroidsYellow1.physicsBodyType = Phaser.Physics.ARCADE;
+        	asteroidsYellow1.createMultiple(20, 'AsteroidYellow1');
+        	asteroidsYellow1.setAll('outOfBoundsKill', true);
+        	asteroidsYellow1.setAll('checkWorldBounds', true);
+        	
+        	asteroidsBlue1 = game.add.group();
+        	asteroidsBlue1.enableBody = true;
+        	asteroidsBlue1.physicsBodyType = Phaser.Physics.ARCADE;
+        	asteroidsBlue1.createMultiple(20, 'AsteroidBlue1');
+        	asteroidsBlue1.setAll('outOfBoundsKill', true);
+        	asteroidsBlue1.setAll('checkWorldBounds', true);
+        	
+        	asteroidsGreen1 = game.add.group();
+        	asteroidsGreen1.enableBody = true;
+        	asteroidsGreen1.physicsBodyType = Phaser.Physics.ARCADE;
+        	asteroidsGreen1.createMultiple(20, 'AsteroidGreen1');
+        	asteroidsGreen1.setAll('outOfBoundsKill', true);
+        	asteroidsGreen1.setAll('checkWorldBounds', true);
+            
+        	asteroidsRed1 = game.add.group();
+        	asteroidsRed1.enableBody = true;
+        	asteroidsRed1.physicsBodyType = Phaser.Physics.ARCADE;
+        	asteroidsRed1.createMultiple(20, 'AsteroidRed1');
+        	asteroidsRed1.setAll('outOfBoundsKill', true);
+        	asteroidsRed1.setAll('checkWorldBounds', true);
+        	
+        	asteroidsYellow2 = game.add.group();
+        	asteroidsYellow2.enableBody = true;
+        	asteroidsYellow2.physicsBodyType = Phaser.Physics.ARCADE;
+        	asteroidsYellow2.createMultiple(20, 'AsteroidYellow2');
+        	asteroidsYellow2.setAll('outOfBoundsKill', true);
+        	asteroidsYellow2.setAll('checkWorldBounds', true);
+        	
+        	asteroidsBlue2 = game.add.group();
+        	asteroidsBlue2.enableBody = true;
+        	asteroidsBlue2.physicsBodyType = Phaser.Physics.ARCADE;
+        	asteroidsBlue2.createMultiple(20, 'AsteroidBlue2');
+        	asteroidsBlue2.setAll('outOfBoundsKill', true);
+        	asteroidsBlue2.setAll('checkWorldBounds', true);
+        	
+        	asteroidsGreen2 = game.add.group();
+        	asteroidsGreen2.enableBody = true;
+        	asteroidsGreen2.physicsBodyType = Phaser.Physics.ARCADE;
+        	asteroidsGreen2.createMultiple(20, 'AsteroidGreen2');
+        	asteroidsGreen2.setAll('outOfBoundsKill', true);
+        	asteroidsGreen2.setAll('checkWorldBounds', true);
+        	
+        	asteroidsRed2 = game.add.group();
+        	asteroidsRed2.enableBody = true;
+        	asteroidsRed2.physicsBodyType = Phaser.Physics.ARCADE;
+        	asteroidsRed2.createMultiple(20, 'AsteroidRed2');
+        	asteroidsRed2.setAll('outOfBoundsKill', true);
+        	asteroidsRed2.setAll('checkWorldBounds', true);
+        	
+        //Load sound effects
+        	orbFire = game.add.audio('OrbFireSfx');
+            laserFire = game.add.audio('LaserFireSfx');
+            missileFire = game.add.audio('MissileFireSfx');
+            shipImpact = game.add.audio('ShipImpactSfx');
+            asteroidImpact = game.add.audio('AsteroidImpactSfx');
+            explosionSound = game.add.audio('ExplosionSfx');
+            
+       //Create asteroids loop      		
+            timer = game.time.create(false);
+            timer.loop(1300, CreateAsteroid1, this);
+            timer.start()
+      		
+       //Explosion pool
+        	explosions = game.add.group();
+        	explosions.createMultiple(30, 'explosion1Sheet');
+        	explosions.forEach(AsteroidAnimations, this);    
+        	
+        	explosions2 = game.add.group();
+        	explosions2.createMultiple(4, 'explosion2Sheet');
+        	explosions2.forEach(ShipAnimations, this);
+        	 	
+      //Game over
+        	gameOverImage=game.add.sprite(-1000, 250, "GameOverSheet");
+        	gameOverImage.animations.add('gameOverAnimation', [0,1,2,3,4,5,6,7], 20, true);
+        	gameOverImage.animations.play('gameOverAnimation');
+        }
+        
+     //Explosion for asteroid
+        function AsteroidAnimations(asteroid) {
+        	asteroid.animations.add('explosionSheet');
+        }
+     
+     //Explosion for ship
+        function ShipAnimations(ship) {
+        	ship.animations.add('explosionSheet');
+        }
+        
+     //Create asteroids
+        function CreateAsteroid1(){
+        	var asteroidType = Math.round(Math.random()*1 + 1);
+        	var asteroidSpawnLocation = Math.round(Math.random()*1 + 1);
+        	var asteroidColour = Math.round(Math.random()*9 + 1);
+        	var rotateRandom = Math.floor(Math.random()*60);
+			rotateRandom *= Math.floor(Math.random()*2) == 1 ? 1 : -1;
+        	var asteroidVelocity = Math.floor((Math.random()*2 + 1) * 100);
+        	
+        	//Chose which asteroid version to use
+        	if (asteroidType == 1){
+        		//Which side of screen to spawn asteroid
+        		if (asteroidSpawnLocation == 1){
+        			//Yellow
+        			if (asteroidColour >= 1 && asteroidColour <= 6){
+        				AsteroidYellow1 = asteroidsYellow1.getFirstExists(false);
+            			if (AsteroidYellow1){
+        					AsteroidYellow1.reset(800, 300-40);
+        					AsteroidYellow1.body.velocity.x = - asteroidVelocity;
+        					game.add.tween(AsteroidYellow1).to( { angle: rotateRandom }, 5000, Phaser.Easing.Linear.None, true);
+            			}
+            		}
+        			//Blue
+        			else if (asteroidColour == 7){
+        				AsteroidBlue1 = asteroidsBlue1.getFirstExists(false);
+        				if (AsteroidBlue1){
+        					AsteroidBlue1.reset(800, 300-40);
+        					AsteroidBlue1.body.velocity.x = - asteroidVelocity;
+        					game.add.tween(AsteroidBlue1).to( { angle: rotateRandom }, 5000, Phaser.Easing.Linear.None, true);
+        				}
+        			}
+        			//Green
+        			else if (asteroidColour == 8){
+        				AsteroidGreen1 = asteroidsGreen1.getFirstExists(false);
+        				if (AsteroidGreen1){
+        					AsteroidGreen1.reset(800, 300-40);
+        					AsteroidGreen1.body.velocity.x = - asteroidVelocity;
+        					game.add.tween(AsteroidGreen1).to( { angle: rotateRandom }, 5000, Phaser.Easing.Linear.None, true);
+        				}
+        			}
+        			//Red
+        			else if (asteroidColour >= 9 && asteroidColour <= 10){
+        				AsteroidRed1 = asteroidsRed1.getFirstExists(false);
+        				if (AsteroidRed1){
+        					AsteroidRed1.reset(800, 300-40);
+        					AsteroidRed1.body.velocity.x = - asteroidVelocity;
+        					game.add.tween(AsteroidRed1).to( { angle: rotateRandom }, 5000, Phaser.Easing.Linear.None, true);
+        				}
+        			}
+    			}
+        		else if (asteroidSpawnLocation == 2){
+        			//Yellow
+        			if (asteroidColour >= 1 && asteroidColour <= 6){
+        				AsteroidYellow1 = asteroidsYellow1.getFirstExists(false);
+            			if (AsteroidYellow1){
+        					AsteroidYellow1.reset(0, 300-40);
+        					AsteroidYellow1.body.velocity.x = asteroidVelocity;
+        					game.add.tween(AsteroidYellow1).to( { angle: rotateRandom }, 5000, Phaser.Easing.Linear.None, true);
+            			}
+            		}
+        			//Blue
+        			else if (asteroidColour == 7){
+        				AsteroidBlue1 = asteroidsBlue1.getFirstExists(false);
+        				if (AsteroidBlue1){
+        					AsteroidBlue1.reset(0, 300-40);
+        					AsteroidBlue1.body.velocity.x = asteroidVelocity;
+        					game.add.tween(AsteroidBlue1).to( { angle: rotateRandom }, 5000, Phaser.Easing.Linear.None, true);
+        				}
+        			}
+        			//Green
+        			else if (asteroidColour == 8){
+        				AsteroidGreen1 = asteroidsGreen1.getFirstExists(false);
+        				if (AsteroidGreen1){
+        					AsteroidGreen1.reset(0, 300-40);
+        					AsteroidGreen1.body.velocity.x = asteroidVelocity;
+        					game.add.tween(AsteroidGreen1).to( { angle: rotateRandom }, 5000, Phaser.Easing.Linear.None, true);
+        				}
+        			}
+        			//Red
+        			else if (asteroidColour >= 9 && asteroidColour <= 10){
+        				AsteroidRed1 = asteroidsRed1.getFirstExists(false);
+        				if (AsteroidRed1){
+        					AsteroidRed1.reset(0, 300-40);
+        					AsteroidRed1.body.velocity.x = asteroidVelocity;
+        					game.add.tween(AsteroidRed1).to( { angle: rotateRandom }, 5000, Phaser.Easing.Linear.None, true);
+        				}
+        			}
+        		}
+        	}
+        	else if (asteroidType == 2){
+        		if (asteroidSpawnLocation == 1){
+        			if (asteroidColour >= 1 && asteroidColour <= 5){
+        				AsteroidYellow2 = asteroidsYellow2.getFirstExists(false);
+            			if (AsteroidYellow2){
+        					AsteroidYellow2.reset(800, 300-50);
+        					AsteroidYellow2.body.velocity.x = - asteroidVelocity;
+        					game.add.tween(AsteroidYellow2).to( { angle: rotateRandom }, 5000, Phaser.Easing.Linear.None, true);
+            			}
+            		}
+        			//Blue
+        			else if (asteroidColour == 6){
+        				AsteroidBlue2 = asteroidsBlue2.getFirstExists(false);
+        				if (AsteroidBlue2){
+        					AsteroidBlue2.reset(800, 300-50);
+        					AsteroidBlue2.body.velocity.x = - asteroidVelocity;
+        					game.add.tween(AsteroidBlue2).to( { angle: rotateRandom }, 5000, Phaser.Easing.Linear.None, true);
+        				}
+        			}
+        			//Green
+        			else if (asteroidColour == 7){
+        				AsteroidGreen2 = asteroidsGreen2.getFirstExists(false);
+        				if (AsteroidGreen2){
+        					AsteroidGreen2.reset(800, 300-50);
+        					AsteroidGreen2.body.velocity.x = - asteroidVelocity;
+        					game.add.tween(AsteroidGreen2).to( { angle: rotateRandom }, 5000, Phaser.Easing.Linear.None, true);
+        				}
+        			}
+        			else if (asteroidColour >= 8 && asteroidColour <= 10){
+        				AsteroidRed2 = asteroidsRed2.getFirstExists(false);
+        				if (AsteroidRed2){
+        					AsteroidRed2.reset(800, 300-50);
+        					AsteroidRed2.body.velocity.x = - asteroidVelocity;
+        					game.add.tween(AsteroidRed2).to( { angle: rotateRandom }, 5000, Phaser.Easing.Linear.None, true);
+        				}
+        			}
+        		}
+        		else if (asteroidSpawnLocation == 2){
+        			if (asteroidColour >= 1 && asteroidColour <= 5){
+        				AsteroidYellow2 = asteroidsYellow2.getFirstExists(false);
+            			if (AsteroidYellow2){
+        					AsteroidYellow2.reset(0, 300-50);
+        					AsteroidYellow2.body.velocity.x = asteroidVelocity;
+        					game.add.tween(AsteroidYellow2).to( { angle: rotateRandom }, 5000, Phaser.Easing.Linear.None, true);
+            			}
+            		}
+        			//Blue
+        			else if (asteroidColour == 6){
+        				AsteroidBlue2 = asteroidsBlue2.getFirstExists(false);
+        				if (AsteroidBlue2){
+        					AsteroidBlue2.reset(0, 300-50);
+        					AsteroidBlue2.body.velocity.x = asteroidVelocity;
+        					game.add.tween(AsteroidBlue2).to( { angle: rotateRandom }, 5000, Phaser.Easing.Linear.None, true);
+        				}
+        			}
+        			//Green
+        			else if (asteroidColour == 7){
+        				AsteroidGreen2 = asteroidsGreen2.getFirstExists(false);
+        				if (AsteroidGreen2){
+        					AsteroidGreen2.reset(0, 300-50);
+        					AsteroidGreen2.body.velocity.x = asteroidVelocity;
+        					game.add.tween(AsteroidGreen2).to( { angle: rotateRandom }, 5000, Phaser.Easing.Linear.None, true);
+        				}
+        			}
+        			else if (asteroidColour >= 8 && asteroidColour <= 10){
+        				AsteroidRed2 = asteroidsRed2.getFirstExists(false);
+        				if (AsteroidRed2){
+        					AsteroidRed2.reset(0, 300-50);
+        					AsteroidRed2.body.velocity.x = asteroidVelocity;
+        					game.add.tween(AsteroidRed2).to( { angle: rotateRandom }, 5000, Phaser.Easing.Linear.None, true);
+        				}
+        			}
+        		}
+        	}
+        }
+
+        function update() {	
+		//Reset player speed
+        	ShipPlayer1.body.velocity.setTo(0, 0);
+			ShipPlayer2.body.velocity.setTo(0, 0);
+		
+		if (paused == false){
+			if (healthP1 > 0){
+			//Move player 1 ship	
+        		//Left
+            	if(game.input.keyboard.isDown(Phaser.Keyboard.A)){
+                	ShipPlayer1.body.velocity.x = -speedShip1;
+            	}
+        		//Right
+        		else if(game.input.keyboard.isDown(Phaser.Keyboard.D)){
+                	ShipPlayer1.body.velocity.x = speedShip1;
+            	}
+        		//Up
+        		else if(game.input.keyboard.isDown(Phaser.Keyboard.W)){
+    	            ShipPlayer1.body.velocity.y = -speedShip1;
+        	    }
+        		//Down
+        		else if(game.input.keyboard.isDown(Phaser.Keyboard.S)){
+                	ShipPlayer1.body.velocity.y = speedShip1;
+            	}
+        	
+        //Fire weapon P1
+        		if (fireButtonOrbP1.isDown){
+					fireOrbP1();
+				}
+        
+				else if (fireButtonLaserP1.isDown){
+        			fireLaserP1();
+        		}
+        	
+				else if (fireButtonMissileP1.isDown){
+        			fireMissileP1();
+        		}
+			}	
+        
+		if (healthP2 > 0){
+       		//Move player 2 ship
+        		//Left
+        		if(game.input.keyboard.isDown(Phaser.Keyboard.L)){
+        			ShipPlayer2.body.velocity.x = -speedShip2;
+        		}
+        		//Right
+        		else if(game.input.keyboard.isDown(Phaser.Keyboard.QUOTES)){
+        			ShipPlayer2.body.velocity.x = speedShip2;
+        		}
+        		//Up
+        		else if(game.input.keyboard.isDown(Phaser.Keyboard.P)){
+        			ShipPlayer2.body.velocity.y = -speedShip2;
+        		}
+        		//Down
+        		else if(game.input.keyboard.isDown(Phaser.Keyboard.COLON)){
+        			ShipPlayer2.body.velocity.y = speedShip1;
+        		}
+       //Fire weapon P2
+        		if (fireButtonOrbP2.isDown){
+        			fireOrbP2();
+        		}
+        		else if (fireButtonLaserP2.isDown){
+        			fireLaserP2();
+        		}
+        		else if (fireButtonMissileP2.isDown){
+        		fireMissileP2();
+        		}
+			}
+		}
+        	
+		//Boundaries Ship 1
+        	//Left Side
+        	if (ShipPlayer1.x < 0){
+        		ShipPlayer1.x = 0;
+        	//Right Side
+        	}
+        	if (ShipPlayer1.x + 50 > 800){
+        		ShipPlayer1.x = 800 - 50;
+        	//Bottom
+        	}
+        	if (ShipPlayer1.y + 100 > 600){
+        		ShipPlayer1.y = 600 - 100;
+        	}
+        	//Middle
+        	if (ShipPlayer1.y < 300){
+        		ShipPlayer1.y = 300;
+        	}
+        	
+        //Boundaries Ship 1
+        	//Left Side
+        	if (ShipPlayer2.x < 0){
+        		ShipPlayer2.x = 0;
+        	//Right Side
+        	}
+        	if (ShipPlayer2.x + 50 > 800){
+        		ShipPlayer2.x = 800 - 50;
+        	//Top
+        	}
+        	if (ShipPlayer2.y < 0){
+        		ShipPlayer2.y = 0;
+        	}
+        	//Middle
+        	if (ShipPlayer2.y + 100 > 300){
+        		ShipPlayer2.y = 300 - 100;
+        	}
+        
+        	
+        //Text display update
+        	orbsLeftP1.text = orbsP1.countDead();
+        	lasersLeftP1.text = lasersP1.countDead();
+        	missilesLeftP1.text = missilesP1.countDead();
+        	orbsLeftP2.text = orbsP2.countDead();
+        	lasersLeftP2.text = lasersP2.countDead();
+        	missilesLeftP2.text = missilesP2.countDead();
+        	healthTextP1.text = healthP1
+        	healthTextP2.text = healthP2;
+	
+        //Weapon collisions
+        if (paused == false){
+        	if (gameOver == false){
+  try{
+        		game.physics.arcade.collide(ShipPlayer2, orbsP1, orbP1CollideShipPlayer2, null, this);
+        		game.physics.arcade.collide(ShipPlayer2, lasersP1, laserP1CollideShipPlayer2, null, this);
+        		game.physics.arcade.collide(ShipPlayer2, missilesP1, missileP1CollideShipPlayer2, null, this);
+        	
+        		game.physics.arcade.collide(ShipPlayer1, orbsP2, orbP2CollideShipPlayer1, null, this);
+        		game.physics.arcade.collide(ShipPlayer1, lasersP2, laserP2CollideShipPlayer1, null, this);
+        		game.physics.arcade.collide(ShipPlayer1, missilesP2, missileP2CollideShipPlayer1, null, this);
+  }catch(err){}
+  			
+		//Asteroid collisions
+			//P1
+				game.physics.arcade.collide(asteroidsYellow1, orbsP1, AsteroidCancel, null, this);
+				game.physics.arcade.collide(asteroidsYellow2, orbsP1, AsteroidCancel, null, this);
+				game.physics.arcade.collide(asteroidsYellow1, lasersP1, AsteroidPush, null, this);
+				game.physics.arcade.collide(asteroidsYellow2, lasersP1, AsteroidPush, null, this);
+				game.physics.arcade.collide(asteroidsYellow1, missilesP1, P1MissileCollideYellow, null, this);
+				game.physics.arcade.collide(asteroidsYellow2, missilesP1, P1MissileCollideYellow, null, this);
+			
+				game.physics.arcade.collide(asteroidsBlue1, orbsP1, P1WeaponCollideBlue, null, this);
+				game.physics.arcade.collide(asteroidsBlue2, orbsP1, P1WeaponCollideBlue, null, this);
+				game.physics.arcade.collide(asteroidsBlue1, lasersP1, P1WeaponCollideBlue, null, this);
+				game.physics.arcade.collide(asteroidsBlue2, lasersP1, P1WeaponCollideBlue, null, this);
+				game.physics.arcade.collide(asteroidsBlue1, missilesP1, P1MissileCollideBlue, null, this);
+				game.physics.arcade.collide(asteroidsBlue2, missilesP1, P1MissileCollideBlue, null, this);
+			
+				game.physics.arcade.collide(asteroidsGreen1, orbsP1, P1WeaponCollideGreen, null, this);
+				game.physics.arcade.collide(asteroidsGreen2, orbsP1, P1WeaponCollideGreen, null, this);
+				game.physics.arcade.collide(asteroidsGreen1, lasersP1, P1WeaponCollideGreen, null, this);
+				game.physics.arcade.collide(asteroidsGreen2, lasersP1, P1WeaponCollideGreen, null, this);
+				game.physics.arcade.collide(asteroidsGreen1, missilesP1, P1MissileCollideGreen, null, this);
+				game.physics.arcade.collide(asteroidsGreen2, missilesP1, P1MissileCollideGreen, null, this);
+			
+				game.physics.arcade.collide(asteroidsRed1, orbsP1, P1WeaponCollideRed, null, this);
+				game.physics.arcade.collide(asteroidsRed2, orbsP1, P1WeaponCollideRed, null, this);
+				game.physics.arcade.collide(asteroidsRed1, lasersP1, P1WeaponCollideRed, null, this);
+				game.physics.arcade.collide(asteroidsRed2, lasersP1, P1WeaponCollideRed, null, this);
+				game.physics.arcade.collide(asteroidsRed1, missilesP1, P1MissileCollideRed, null, this);
+				game.physics.arcade.collide(asteroidsRed2, missilesP1, P1MissileCollideRed, null, this);
+			
+				game.physics.arcade.collide(asteroidsYellow1, ShipPlayer1, Ship1CollideYellow, null, this);
+				game.physics.arcade.collide(asteroidsYellow2, ShipPlayer1, Ship1CollideYellow, null, this);
+				game.physics.arcade.collide(asteroidsBlue1, ShipPlayer1, Ship1CollideBlue, null, this);
+				game.physics.arcade.collide(asteroidsBlue2, ShipPlayer1, Ship1CollideBlue, null, this);
+				game.physics.arcade.collide(asteroidsGreen1, ShipPlayer1, Ship1CollideGreen, null, this);
+				game.physics.arcade.collide(asteroidsGreen2, ShipPlayer1, Ship1CollideGreen, null, this);
+				game.physics.arcade.collide(asteroidsRed1, ShipPlayer1, Ship1CollideRed, null, this);
+				game.physics.arcade.collide(asteroidsRed2, ShipPlayer1, Ship1CollideRed, null, this);
+			
+				//P2
+				game.physics.arcade.collide(asteroidsYellow1, orbsP2, AsteroidCancel, null, this);
+				game.physics.arcade.collide(asteroidsYellow2, orbsP2, AsteroidCancel, null, this);
+				game.physics.arcade.collide(asteroidsYellow1, lasersP2, AsteroidPush, null, this);
+				game.physics.arcade.collide(asteroidsYellow2, lasersP2, AsteroidPush, null, this);
+				game.physics.arcade.collide(asteroidsYellow1, missilesP2, P2MissileCollideYellow, null, this);
+				game.physics.arcade.collide(asteroidsYellow2, missilesP2, P2MissileCollideYellow, null, this);
+			
+				game.physics.arcade.collide(asteroidsBlue1, orbsP2, P2WeaponCollideBlue, null, this);
+				game.physics.arcade.collide(asteroidsBlue2, orbsP2, P2WeaponCollideBlue, null, this);
+				game.physics.arcade.collide(asteroidsBlue1, lasersP2, P2WeaponCollideBlue, null, this);
+				game.physics.arcade.collide(asteroidsBlue2, lasersP2, P2WeaponCollideBlue, null, this);
+				game.physics.arcade.collide(asteroidsBlue1, missilesP2, P2MissileCollideBlue, null, this);
+				game.physics.arcade.collide(asteroidsBlue2, missilesP2, P2MissileCollideBlue, null, this);
+			
+				game.physics.arcade.collide(asteroidsGreen1, orbsP2, P2WeaponCollideGreen, null, this);
+				game.physics.arcade.collide(asteroidsGreen2, orbsP2, P2WeaponCollideGreen, null, this);
+				game.physics.arcade.collide(asteroidsGreen1, lasersP2, P2WeaponCollideGreen, null, this);
+				game.physics.arcade.collide(asteroidsGreen2, lasersP2, P2WeaponCollideGreen, null, this);
+				game.physics.arcade.collide(asteroidsGreen1, missilesP2, P2MissileCollideGreen, null, this);
+				game.physics.arcade.collide(asteroidsGreen2, missilesP2, P2MissileCollideGreen, null, this);
+			
+				game.physics.arcade.collide(asteroidsRed1, orbsP2, P2WeaponCollideRed, null, this);
+				game.physics.arcade.collide(asteroidsRed2, orbsP2, P2WeaponCollideRed, null, this);
+				game.physics.arcade.collide(asteroidsRed1, lasersP2, P2WeaponCollideRed, null, this);
+				game.physics.arcade.collide(asteroidsRed2, lasersP2, P2WeaponCollideRed, null, this);
+				game.physics.arcade.collide(asteroidsRed1, missilesP2, P2MissileCollideRed, null, this);
+				game.physics.arcade.collide(asteroidsRed2, missilesP2, P2MissileCollideRed, null, this);
+			
+				game.physics.arcade.collide(asteroidsYellow1, ShipPlayer2, Ship2CollideYellow, null, this);
+				game.physics.arcade.collide(asteroidsYellow2, ShipPlayer2, Ship2CollideYellow, null, this);
+				game.physics.arcade.collide(asteroidsBlue1, ShipPlayer2, Ship2CollideBlue, null, this);
+				game.physics.arcade.collide(asteroidsBlue2, ShipPlayer2, Ship2CollideBlue, null, this);
+				game.physics.arcade.collide(asteroidsGreen1, ShipPlayer2, Ship2CollideGreen, null, this);
+				game.physics.arcade.collide(asteroidsGreen2, ShipPlayer2, Ship2CollideGreen, null, this);
+				game.physics.arcade.collide(asteroidsRed1, ShipPlayer2, Ship2CollideRed, null, this);
+				game.physics.arcade.collide(asteroidsRed2, ShipPlayer2, Ship2CollideRed, null, this);
+			
+        	}
+        }
+        
+	//Remove power ups
+		if (game.time.now >= timerPowerUpsP1){
+			RemovePowerUpP1();
+		}
+		if (game.time.now >= timerPowerUpsP2){
+			RemovePowerUpP2();
+		}
+	}
+        
+    //Asteroid collisions
+    	function AsteroidCancel (asteroid, weapon){
+    		weapon.kill();
+    		asteroid.body.velocity.x = asteroid.body.velocity.x*0.25;
+            asteroid.body.velocity.y = asteroid.body.velocity.y*0.25;
+    	}
+    	function AsteroidPush (asteroid, weapon){
+    		weapon.kill();
+    	}
+    	//P1
+    	function P1WeaponCollideYellow (asteroid, weapon){
+    		weapon.kill();
+    		asteroid.y= -1000;
+    		asteroidImpact.play();
+    		var explosion = explosions.getFirstExists(false);
+    	    explosion.reset(asteroid.body.x, asteroid.body.y);
+    	    explosion.play('explosionSheet', 40, false, true);
+    	}
+    	function P1WeaponCollideBlue(asteroid, weapon){
+    		weapon.kill();
+        	asteroid.y= -1000;
+        	asteroidImpact.play();
+        	var explosion = explosions.getFirstExists(false);
+    	    explosion.reset(asteroid.body.x, asteroid.body.y);
+    	    explosion.play('explosionSheet', 40, false, true);
+    	    PowerUpP1();
+    	}
+    	function P1WeaponCollideGreen(asteroid, weapon){
+    		weapon.kill();
+        	asteroid.y= -1000;
+        	asteroidImpact.play();
+        	var explosion = explosions.getFirstExists(false);
+    	    explosion.reset(asteroid.body.x, asteroid.body.y);
+    	    explosion.play('explosionSheet', 40, false, true);
+        	if (healthP1 + 5 <= health){
+        		healthP1 = healthP1 + 5;	
+        	}
+    	}
+    	function P1WeaponCollideRed(asteroid, weapon){
+    		weapon.kill();
+        	asteroid.y= -1000;
+        	asteroidImpact.play();
+        	var explosion = explosions.getFirstExists(false);
+    	    explosion.reset(asteroid.body.x, asteroid.body.y);
+    	    explosion.play('explosionSheet', 40, false, true);
+        	healthP1 = healthP1 - 10;
+        	if (healthP1 <= 0){
+    	    	P1Win = 0;
+				P2Win = 1;
+				healthP1 = 0;
+				
+                localStorage.setItem("P1Win", P1Win);
+                localStorage.setItem("P2Win", P2Win);
+                ShipPlayer1.kill();
+                
+    	    	var explosion = explosions2.getFirstExists(false);
+        	    explosion.reset(ShipPlayer1.body.x, ShipPlayer1.body.y);
+        	    explosion.play('explosionSheet', 40, false, true);
+        	    game.time.events.add(Phaser.Timer.SECOND * 3, endScreen, this);
+                gameOverImage.x = 250;
+                gameOver = true;
+                explosionSound.play();
+    	    }
+    	}
+    	//Missile Collide P1
+    	function P1MissileCollideYellow (asteroid, weapon){
+    		var random = Math.round(Math.random()*1 + 1);
+    		if (random == 1){
+    			weapon.kill();	
+    		}
+    		weapon.body.velocity.x = 0;
+    		weapon.body.velocity.y = -150 + (-150*weaponSpeedP1);
+    		asteroid.y= -1000;
+    		asteroidImpact.play();
+    		var explosion = explosions.getFirstExists(false);
+    	    explosion.reset(asteroid.body.x, asteroid.body.y);
+    	    explosion.play('explosionSheet', 40, false, true);
+    	}
+    	function P1MissileCollideBlue(asteroid, weapon){
+    		var random = Math.round(Math.random()*1 + 1);
+    		if (random == 1){
+    			weapon.kill();	
+    		}
+    		weapon.body.velocity.x = 0;
+    		weapon.body.velocity.y = -150 + (-150*weaponSpeedP1);
+        	asteroid.y= -1000;
+        	asteroidImpact.play();
+        	var explosion = explosions.getFirstExists(false);
+    	    explosion.reset(asteroid.body.x, asteroid.body.y);
+    	    explosion.play('explosionSheet', 40, false, true);
+    	    PowerUpP1();
+    	}
+    	function P1MissileCollideGreen(asteroid, weapon){
+    		var random = Math.round(Math.random()*1 + 1);
+    		if (random == 1){
+    			weapon.kill();	
+    		}
+    		weapon.body.velocity.x = 0;
+    		weapon.body.velocity.y = - 150 + (-150*weaponSpeedP1);
+        	asteroid.y= -1000;
+        	asteroidImpact.play();
+        	var explosion = explosions.getFirstExists(false);
+    	    explosion.reset(asteroid.body.x, asteroid.body.y);
+    	    explosion.play('explosionSheet', 40, false, true);
+        	if (healthP1 + 5 <= health){
+        		healthP1 = healthP1 + 5;	
+        	}
+    	}
+    	function P1MissileCollideRed(asteroid, weapon){
+    		var random = Math.round(Math.random()*1 + 1);
+    		if (random == 1){
+    			weapon.kill();	
+    		}
+    		weapon.body.velocity.x = 0;
+    		weapon.body.velocity.y = -150 + (-150*weaponSpeedP1);
+        	asteroid.y= -1000;
+        	asteroidImpact.play();
+        	var explosion = explosions.getFirstExists(false);
+    	    explosion.reset(asteroid.body.x, asteroid.body.y);
+    	    explosion.play('explosionSheet', 40, false, true);
+        	healthP1 = healthP1 - 10;
+        	if (healthP1 <= 0){
+    	    	P1Win = 0;
+				P2Win = 1;
+				healthP1 = 0;
+				
+                localStorage.setItem("P1Win", P1Win);
+                localStorage.setItem("P2Win", P2Win);
+                ShipPlayer1.kill();
+                
+    	    	var explosion = explosions2.getFirstExists(false);
+        	    explosion.reset(ShipPlayer1.body.x, ShipPlayer1.body.y);
+        	    explosion.play('explosionSheet', 40, false, true);
+        	    game.time.events.add(Phaser.Timer.SECOND * 3, endScreen, this);
+                gameOverImage.x = 250;
+                gameOver = true;
+                explosionSound.play();
+    	    }
+    	}
+    	
+    	
+    	function Ship1CollideYellow (asteroid, ship){
+    		healthP1 = healthP1 - 5;
+    		asteroid.body.velocity.y = asteroid.body.velocity.y * - 5;
+    		asteroid.body.velocity.x = asteroid.body.velocity.x * - 5;
+    		ship.kill();
+    		shipImpact.play();
+    		var explosion = explosions.getFirstExists(false);
+    	    explosion.reset(ship.body.x, ship.body.y);
+    	    explosion.play('explosionSheet', 40, false, true);
+    	    if (healthP1 <= 0){
+    	    	P1Win = 0;
+				P2Win = 1;
+				healthP1 = 0;
+				
+                localStorage.setItem("P1Win", P1Win);
+                localStorage.setItem("P2Win", P2Win);
+                asteroid.kill();
+                
+    	    	var explosion = explosions2.getFirstExists(false);
+        	    explosion.reset(asteroid.body.x, asteroid.body.y);
+        	    explosion.play('explosionSheet', 40, false, true);
+        	    game.time.events.add(Phaser.Timer.SECOND * 3, endScreen, this);
+                gameOverImage.x = 250;
+                gameOver = true;
+                explosionSound.play();
+    	    }
+    	}
+    	function Ship1CollideBlue (asteroid, ship){
+    		asteroid.body.velocity.y = asteroid.body.velocity.y * - 5;
+    		asteroid.body.velocity.x = asteroid.body.velocity.x * - 5;
+    		ship.kill();
+    		shipImpact.play();
+    		var explosion = explosions.getFirstExists(false);
+    	    explosion.reset(ship.body.x, ship.body.y);
+    	    explosion.play('explosionSheet', 40, false, true);
+    	    PowerUpP1();
+    	}
+    	function Ship1CollideGreen (asteroid, ship){
+    		if (healthP1 +5 <= health){
+    			healthP1 = healthP1 + 5;	
+    		}
+    		asteroid.body.velocity.y = asteroid.body.velocity.y * - 5;
+    		asteroid.body.velocity.x = asteroid.body.velocity.x * - 5;
+    		ship.kill();
+    		shipImpact.play();
+    		var explosion = explosions.getFirstExists(false);
+    	    explosion.reset(ship.body.x, ship.body.y);
+    	    explosion.play('explosionSheet', 40, false, true);
+    	}
+    	function Ship1CollideRed (asteroid, ship){
+    		healthP1 = healthP1 - 10;
+    		asteroid.body.velocity.y = asteroid.body.velocity.y * - 5;
+    		asteroid.body.velocity.x = asteroid.body.velocity.x * - 5;
+    		ship.kill();
+    		shipImpact.play();
+    		var explosion = explosions.getFirstExists(false);
+    	    explosion.reset(ship.body.x, ship.body.y);
+    	    explosion.play('explosionSheet', 40, false, true);
+    	    if (healthP1 <= 0){
+    	    	P1Win = 0;
+				P2Win = 1;
+				healthP1 = 0;
+				
+                localStorage.setItem("P1Win", P1Win);
+                localStorage.setItem("P2Win", P2Win);
+                asteroid.kill();
+                
+    	    	var explosion = explosions2.getFirstExists(false);
+        	    explosion.reset(asteroid.body.x, asteroid.body.y);
+        	    explosion.play('explosionSheet', 40, false, true);
+        	    game.time.events.add(Phaser.Timer.SECOND * 3, endScreen, this);
+                gameOverImage.x = 250;
+                gameOver = true;
+                explosionSound.play();
+    	    }
+    	}
+    	
+    	
+    	//P2
+    	function P2WeaponCollideYellow (asteroid, weapon){
+    		weapon.kill();
+    		asteroid.y= -1000;
+    		asteroidImpact.play();
+    		var explosion = explosions.getFirstExists(false);
+    	    explosion.reset(asteroid.body.x, asteroid.body.y);
+    	    explosion.play('explosionSheet', 40, false, true);
+    	}
+    	function P2WeaponCollideBlue(asteroid, weapon){
+    		weapon.kill();
+        	asteroid.y= -1000;
+        	asteroidImpact.play();
+        	var explosion = explosions.getFirstExists(false);
+    	    explosion.reset(asteroid.body.x, asteroid.body.y);
+    	    explosion.play('explosionSheet', 40, false, true);
+    	    PowerUpP2();
+    	}
+    	function P2WeaponCollideGreen(asteroid, weapon){
+    		weapon.kill();
+        	asteroid.y= -1000;
+        	asteroidImpact.play();
+        	var explosion = explosions.getFirstExists(false);
+    	    explosion.reset(asteroid.body.x, asteroid.body.y);
+    	    explosion.play('explosionSheet', 40, false, true);
+        	if (healthP2 + 5 <= health){
+        		healthP2 = healthP2 + 5;	
+        	}
+    	}
+    	function P2WeaponCollideRed(asteroid, weapon){
+    		weapon.kill();
+        	asteroid.y= -1000;
+        	asteroidImpact.play();
+        	var explosion = explosions.getFirstExists(false);
+    	    explosion.reset(asteroid.body.x, asteroid.body.y);
+    	    explosion.play('explosionSheet', 40, false, true);
+        	healthP2 = healthP2 - 10;
+        	if (healthP2 <= 0){
+    	    	P1Win = 1;
+				P2Win = 0;
+				healthP2 = 0;
+				
+                localStorage.setItem("P1Win", P1Win);
+                localStorage.setItem("P2Win", P2Win);
+                ShipPlayer2.kill();
+                
+    	    	var explosion = explosions2.getFirstExists(false);
+        	    explosion.reset(ShipPlayer2.body.x, ShipPlayer2.body.y);
+        	    explosion.play('explosionSheet', 40, false, true);
+        	    game.time.events.add(Phaser.Timer.SECOND * 3, endScreen, this);
+                gameOverImage.x = 250;
+                gameOver = true;
+                explosionSound.play();
+    	    }
+    	}
+    	
+    	//Missile collide P2
+    	function P2MissileCollideYellow (asteroid, weapon){
+    		var random = Math.round(Math.random()*1 + 1);
+    		if (random == 1){
+    			weapon.kill();	
+    		}
+    		weapon.body.velocity.x = 0;
+    		weapon.body.velocity.y = 150 + (150*weaponSpeedP2);
+    		asteroid.y= -1000;
+    		asteroidImpact.play();
+    		var explosion = explosions.getFirstExists(false);
+    	    explosion.reset(asteroid.body.x, asteroid.body.y);
+    	    explosion.play('explosionSheet', 40, false, true);
+    	}
+    	function P2MissileCollideBlue(asteroid, weapon){
+    		var random = Math.round(Math.random()*1 + 1);
+    		if (random == 1){
+    			weapon.kill();	
+    		}
+    		weapon.body.velocity.x = 0;
+    		weapon.body.velocity.y = 150 + (150*weaponSpeedP2);
+        	asteroid.y= -1000;
+        	asteroidImpact.play();
+        	var explosion = explosions.getFirstExists(false);
+    	    explosion.reset(asteroid.body.x, asteroid.body.y);
+    	    explosion.play('explosionSheet', 40, false, true);
+    	    PowerUpP2();
+    	}
+    	function P2MissileCollideGreen(asteroid, weapon){
+    		var random = Math.round(Math.random()*1 + 1);
+    		if (random == 1){
+    			weapon.kill();	
+    		}
+    		weapon.body.velocity.x = 0;
+    		weapon.body.velocity.y = 150 + (150*weaponSpeedP2);
+        	asteroid.y= -1000;
+        	asteroidImpact.play();
+        	var explosion = explosions.getFirstExists(false);
+    	    explosion.reset(asteroid.body.x, asteroid.body.y);
+    	    explosion.play('explosionSheet', 40, false, true);
+        	if (healthP2 + 5 <= health){
+        		healthP2 = healthP2 + 5;	
+        	}
+    	}
+    	function P2MissileCollideRed(asteroid, weapon){
+    		var random = Math.round(Math.random()*1 + 1);
+    		if (random == 1){
+    			weapon.kill();	
+    		}
+    		weapon.body.velocity.x = 0;
+    		weapon.body.velocity.y = 150 + (150*weaponSpeedP2);
+        	asteroid.y= -1000;
+        	asteroidImpact.play();
+        	var explosion = explosions.getFirstExists(false);
+    	    explosion.reset(asteroid.body.x, asteroid.body.y);
+    	    explosion.play('explosionSheet', 40, false, true);
+        	healthP2 = healthP2 - 10;
+        	if (healthP2 <= 0){
+    	    	P1Win = 1;
+				P2Win = 0;
+				healthP2 = 0;
+				
+                localStorage.setItem("P1Win", P1Win);
+                localStorage.setItem("P2Win", P2Win);
+                ShipPlayer2.kill();
+                
+    	    	var explosion = explosions2.getFirstExists(false);
+        	    explosion.reset(ShipPlayer2.body.x, ShipPlayer2.body.y);
+        	    explosion.play('explosionSheet', 40, false, true);
+        	    game.time.events.add(Phaser.Timer.SECOND * 3, endScreen, this);
+                gameOverImage.x = 250;
+                gameOver = true;
+                explosionSound.play();
+    	    }
+    	}
+    	
+    	
+    	function Ship2CollideYellow(asteroid, ship) {
+    		healthP2 = healthP2 - 5;
+    		asteroid.body.velocity.y = asteroid.body.velocity.y * - 5;
+    		asteroid.body.velocity.x = asteroid.body.velocity.x * - 5;
+    		ship.kill();
+    		shipImpact.play();
+    		var explosion = explosions.getFirstExists(false);
+    	    explosion.reset(ship.body.x, ship.body.y);
+    	    explosion.play('explosionSheet', 40, false, true);
+    	    if (healthP2 <= 0){
+    	    	P1Win = 1;
+				P2Win = 0;
+				healthP2 = 0;
+				
+                localStorage.setItem("P1Win", P1Win);
+                localStorage.setItem("P2Win", P2Win);
+                asteroid.kill();
+                
+    	    	var explosion = explosions2.getFirstExists(false);
+        	    explosion.reset(asteroid.body.x, asteroid.body.y);
+        	    explosion.play('explosionSheet', 40, false, true);
+        	    game.time.events.add(Phaser.Timer.SECOND * 3, endScreen, this);
+                gameOverImage.x = 250;
+                gameOver = true;
+                explosionSound.play();
+    	    }
+    	}
+    	function Ship2CollideBlue(asteroid, ship) {
+    		asteroid.body.velocity.y = asteroid.body.velocity.y * - 5;
+    		asteroid.body.velocity.x = asteroid.body.velocity.x * - 5;
+    		ship.kill();
+    		shipImpact.play();
+    		var explosion = explosions.getFirstExists(false);
+    	    explosion.reset(ship.body.x, ship.body.y);
+    	    explosion.play('explosionSheet', 40, false, true);
+    	    PowerUpP2();
+    	}
+    	function Ship2CollideGreen(asteroid, ship) {
+    		if (healthP2 + 5 <= 200){
+    			healthP2 = healthP2 + 5;	
+    		}
+    		asteroid.body.velocity.y = asteroid.body.velocity.y * - 5;
+    		asteroid.body.velocity.x = asteroid.body.velocity.x * - 5;
+    		ship.kill();
+    		shipImpact.play();
+    		var explosion = explosions.getFirstExists(false);
+    	    explosion.reset(ship.body.x, ship.body.y);
+    	    explosion.play('explosionSheet', 40, false, true);
+    	}
+    	function Ship2CollideRed(asteroid, ship) {
+    		healthP2 = healthP2 - 10;
+    		asteroid.body.velocity.y = asteroid.body.velocity.y * - 5;
+    		asteroid.body.velocity.x = asteroid.body.velocity.x * - 5;
+    		ship.kill();
+    		shipImpact.play();
+    		var explosion = explosions.getFirstExists(false);
+    	    explosion.reset(ship.body.x, ship.body.y);
+    	    explosion.play('explosionSheet', 40, false, true);
+    	    if (healthP2 <= 0){
+    	    	P1Win = 1;
+				P2Win = 0;
+				healthP2 = 0;
+				
+                localStorage.setItem("P1Win", P1Win);
+                localStorage.setItem("P2Win", P2Win);
+                asteroid.kill();
+                
+    	    	var explosion = explosions2.getFirstExists(false);
+        	    explosion.reset(asteroid.body.x, asteroid.body.y);
+        	    explosion.play('explosionSheet', 40, false, true);
+        	    game.time.events.add(Phaser.Timer.SECOND * 3, endScreen, this);
+                gameOverImage.x = 250;
+                gameOver = true;
+                explosionSound.play();
+    	    }
+    	}
+    	
+        
+	//Weapon Collisions
+        function orbP1CollideShipPlayer2 (ship, orb) {
+            healthP2 = healthP2 - orbDamageP1;
+            orb.kill();
+            shipImpact.play();
+            if (healthP2 <= 0){
+    	    	P1Win = 1;
+				P2Win = 0;
+				healthP2 = 0;
+				
+                localStorage.setItem("P1Win", P1Win);
+                localStorage.setItem("P2Win", P2Win);
+                ship.kill();
+                
+    	    	var explosion = explosions2.getFirstExists(false);
+        	    explosion.reset(ship.body.x, ship.body.y);
+        	    explosion.play('explosionSheet', 40, false, true);
+        	    game.time.events.add(Phaser.Timer.SECOND * 3, endScreen, this);
+                gameOverImage.x = 250;
+                gameOver = true;
+                explosionSound.play();
+    	    }
+        }
+		function laserP1CollideShipPlayer2 (ship, laser){
+			healthP2 = healthP2 - laserDamageP1;
+			laser.kill();
+			shipImpact.play();
+			if (healthP2 <= 0){
+    	    	P1Win = 1;
+				P2Win = 0;
+				healthP2 = 0;
+				
+                localStorage.setItem("P1Win", P1Win);
+                localStorage.setItem("P2Win", P2Win);
+                ship.kill();
+                
+    	    	var explosion = explosions2.getFirstExists(false);
+        	    explosion.reset(ship.body.x, ship.body.y);
+        	    explosion.play('explosionSheet', 40, false, true);
+        	    game.time.events.add(Phaser.Timer.SECOND * 3, endScreen, this);
+                gameOverImage.x = 250;
+                gameOver = true;
+                explosionSound.play();
+    	    }
+		}
+		function missileP1CollideShipPlayer2 (ship, missile){
+			healthP2 = healthP2-missileDamageP1;
+			missile.kill();
+			shipImpact.play();
+			if (healthP2 <= 0){
+    	    	P1Win = 1;
+				P2Win = 0;
+				healthP2 = 0;
+				
+                localStorage.setItem("P1Win", P1Win);
+                localStorage.setItem("P2Win", P2Win);
+                ship.kill();
+                
+    	    	var explosion = explosions2.getFirstExists(false);
+        	    explosion.reset(ship.body.x, ship.body.y);
+        	    explosion.play('explosionSheet', 40, false, true);
+        	    game.time.events.add(Phaser.Timer.SECOND * 3, endScreen, this);
+                gameOverImage.x = 250;
+                gameOver = true;
+                explosionSound.play();
+    	    }
+		}
+		
+		function orbP2CollideShipPlayer1 (ship, orb){
+			healthP1= healthP1 - orbDamageP2;
+			orb.kill();
+			shipImpact.play();
+			if (healthP1 <= 0){
+    	    	P1Win = 0;
+				P2Win = 1;
+				healthP1 = 0;
+				
+                localStorage.setItem("P1Win", P1Win);
+                localStorage.setItem("P2Win", P2Win);
+                ship.kill();
+                
+    	    	var explosion = explosions2.getFirstExists(false);
+        	    explosion.reset(ship.body.x, ship.body.y);
+        	    explosion.play('explosionSheet', 40, false, true);
+        	    game.time.events.add(Phaser.Timer.SECOND * 3, endScreen, this);
+                gameOverImage.x = 250;
+                gameOver = true;
+                explosionSound.play();
+    	    }
+		}
+        function laserP2CollideShipPlayer1 (ship, laser){
+        	healthP1 = healthP1 - laserDamageP2;
+        	laser.kill();
+        	shipImpact.play();
+        	if (healthP1 <= 0){
+    	    	P1Win = 0;
+				P2Win = 1;
+				healthP1 = 0;
+				
+                localStorage.setItem("P1Win", P1Win);
+                localStorage.setItem("P2Win", P2Win);
+                ship.kill();
+                
+    	    	var explosion = explosions2.getFirstExists(false);
+        	    explosion.reset(ship.body.x, ship.body.y);
+        	    explosion.play('explosionSheet', 40, false, true);
+        	    game.time.events.add(Phaser.Timer.SECOND * 3, endScreen, this);
+                gameOverImage.x = 250;
+                gameOver = true;
+                explosionSound.play();
+    	    }
+        }
+        function missileP2CollideShipPlayer1 (ship, missile){
+        	healthP1 =healthP1 - missileDamageP2;
+        	missile.kill();
+        	shipImpact.play();
+        	if (healthP1 <= 0){
+    	    	P1Win = 0;
+				P2Win = 1;
+				healthP1 = 0;
+				
+                localStorage.setItem("P1Win", P1Win);
+                localStorage.setItem("P2Win", P2Win);
+                ship.kill();
+                
+    	    	var explosion = explosions2.getFirstExists(false);
+        	    explosion.reset(ship.body.x, ship.body.y);
+        	    explosion.play('explosionSheet', 40, false, true);
+        	    game.time.events.add(Phaser.Timer.SECOND * 3, endScreen, this);
+                gameOverImage.x = 250;
+                gameOver = true;
+                explosionSound.play();
+    	    }
+        }
+        
+        function endScreen (){
+        	window.location.href = "EndScreen.html";	
+        }
+        
+        function PowerUpP1(){
+        	var Type = Math.round(Math.random()*9 + 1);
+        	//1-3 30% = speed
+        	//4-6 30% = firerate
+        	//7-9 30% = weapon speed
+        	//10 10% = all
+        	if (Type >= 1 && Type <= 3){
+        		speedShip1 = 600;
+        		timerPowerUpsP1 = game.time.now + (1000 * 10);
+        		PowerUpTypeP1.setText('Speed +');
+        		fireRateP1 = 0;
+        		weaponSpeedP1 = 0;
+        	}
+        	else if (Type >=4 && Type <= 6){
+        		fireRateP1 = 0.5;
+        		timerPowerUpsP1 = game.time.now + (1000 * 10);
+        		PowerUpTypeP1.setText('Fire Rate +');
+        		speedShip1 = 300;
+        		weaponSpeedP1 = 0;
+        		}
+        	else if (Type >=7 && Type <= 9){
+        		weaponSpeedP1 = 0.5;
+        		timerPowerUpsP1 = game.time.now + (1000 * 10);
+        		PowerUpTypeP1.setText('Weapon +');
+        		speedShip1 = 300;
+        		fireRateP1 = 0;
+        		}
+       		else if (Type == 10){
+        		speedShip1 = 600;
+        		fireRateP1 = 0.5;
+        		weaponSpeedP1 = 0.5;
+        		timerPowerUpsP1 = game.time.now + (1000 * 10);
+        		PowerUpTypeP1.setText('All!');
+        	}
+        }
+        
+        function PowerUpP2(){
+        	var Type = Math.round(Math.random()*9 + 1);
+        	//1-3 30% = speed
+        	//4-6 30% = firerate
+        	//7-9 30% = weapon speed
+        	//10 10% = all
+        	if (Type >= 1 && Type <= 3){
+        		speedShip2 = 600;
+        		timerPowerUpsP2 = game.time.now + (1000 * 10);
+        		PowerUpTypeP2.setText('Speed +');
+        		fireRateP2 = 0;
+        		weaponSpeedP2 = 0;
+        	}
+        	else if (Type >=4 && Type <= 6){
+        		fireRateP2 = 0.5;
+        		timerPowerUpsP2 = game.time.now + (1000 * 10);
+        		PowerUpTypeP2.setText('Fire Rate +');
+        		speedShip2 = 300;
+        		weaponSpeedP1 = 0;
+        	}
+        	else if (Type >=7 && Type <= 9){
+        		weaponSpeedP2 = 0.5;
+        		timerPowerUpsP2 = game.time.now + (1000 * 10);
+        		PowerUpTypeP2.setText('Weapon +');
+        		speedShip2 = 300;
+        		fireRateP2 = 0;
+        	}
+       		else if (Type == 10){
+        		speedShip2 = 600;
+        		fireRateP2 = 0.5;
+        		weaponSpeedP2 = 0.5;
+        		timerPowerUpsP2 = game.time.now + (1000 * 10);
+        		PowerUpTypeP2.setText('All!');
+        	}
+        }
+        
+        //Remove powerups
+        function RemovePowerUpP1(){
+        	if (speedShip1 > 300){
+        		speedShip1 = 300;
+        	}
+        	if (fireRateP1 > 0){
+        		fireRateP1 = 0;
+        	}
+        	if (weaponSpeedP1 > 0){
+        		weaponSpeedP1 = 0;
+        	}
+        	PowerUpTypeP1.setText('none');
+        	
+        }
+        
+        function RemovePowerUpP2() {
+        	if (speedShip2 > 300){
+        		speedShip2 = 300;
+        	}
+        	if (fireRateP2 > 0){
+        		fireRateP2 = 0;
+        	}
+        	if (weaponSpeedP2 > 0){
+        		weaponSpeedP2 = 0;
+        	}
+        	PowerUpTypeP2.setText('none');
+        }
+        
+        function render() {
+	
+        }
+        
+        //Full screen button click
+        function PopoutButtonClick() {
+
+            if (game.scale.isFullScreen){
+                game.scale.stopFullScreen();
+            }
+            else{
+                game.scale.startFullScreen(false);
+            }
+		}
+        
+        //Pause button click
+        function PauseButtonClick(){
+        	if (paused == false){
+        		pauseBackTile = game.add.sprite(250, 0, 'PauseBackTile');
+        		paused = true;
+        		replayButton = game.add.button(400 - 128 , 300 -128 + 50, "ReplayButtonSheet", ReplayButtonClick, this, 2, 1, 0);
+        		menuButton = game.add.button (400 - 128, 450 + 50, 'MenuButtonSheet', MenuButtonClick, this, 2,1,0);
+        		resumeButton = game.add.button(400 - 128, 0, 'ResumeButtonSheet', ResumeButtonClick, this, 2,1,0);
+        	}
+        }
+        //Reload game
+        function ReplayButtonClick(){
+        	window.location.href = "mainGame.html";
+        }
+        //Load menu
+        function MenuButtonClick(){
+        	window.location.href = "menuScreen.html";
+        }
+        //Remove pause screen
+        function ResumeButtonClick(){
+        	pauseBackTile.destroy();
+        	replayButton.destroy();
+        	menuButton.destroy();
+        	resumeButton.destroy();
+        	paused = false;
+        }
+
+	//Fire weapon functions
+		//P1
+        function fireOrbP1 () {
+            orbP1 = orbsP1.getFirstExists(false);
+            
+			if (game.time.now > orbTimeP1){
+
+                if (orbP1){
+                	orbFire.play();
+                	//Generate number between -30 and 30;
+                	var orbRandom = Math.floor(Math.random()*30);
+                	orbRandom *= Math.floor(Math.random()*2) == 1 ? 1 : -1;
+                	var orbRandom2 = Math.floor(Math.random()*2); 
+                	
+                	orbP1 = orbsP1.getFirstExists(false);
+                	orbP1.reset(ShipPlayer1.x + 20, ShipPlayer1.y);
+                	orbP1.body.velocity.x = orbRandom;
+                    orbP1.body.velocity.y = -400 + orbRandom + (-400*weaponSpeedP1);
+                    //Fire rate timer
+                    orbTimeP1 = game.time.now + 50 - (50*fireRateP1);
+                }
+			}
+        }
+        
+        function fireLaserP1() {
+        	laserP1 = lasersP1.getFirstExists(false);
+        	if (game.time.now > laserTimeP1){
+        		if (laserP1){
+        			laserFire.play();
+            		laserP1.reset(ShipPlayer1.x + 20, ShipPlayer1.y);
+            		laserP1.body.velocity.y = -250 + (-250*weaponSpeedP1);
+					
+            		laserTimeP1 = game.time.now + 350 - (350*fireRateP1);
+            	}	
+        	}
+        }
+        
+        function fireMissileP1() {
+        	missileP1 = missilesP1.getFirstExists(false);
+        	if (game.time.now > missileTimeP1){
+        		if (missileP1){
+        			missileFire.play();
+        			missileP1.reset(ShipPlayer1.x + 20, ShipPlayer1.y);
+        			missileP1.body.velocity.y = -150 + (-150*weaponSpeedP1);
+        			
+        			missileTimeP1 = game.time.now + 800 - (800*fireRateP1);
+        		}
+        	}
+        }
+        
+        //P2
+        function fireOrbP2() {
+        	orbP2 = orbsP2.getFirstExists(false);
+        	if (game.time.now > orbTimeP2){
+        		if (orbP2){
+        			orbFire.play();
+        			var orbRandom = Math.floor(Math.random()*30);
+                	orbRandom *= Math.floor(Math.random()*2) == 1 ? 1 : -1;
+                	var orbRandom2 = Math.floor(Math.random()*2); 
+                	
+                	orbP2 = orbsP2.getFirstExists(false);
+            		orbP2.reset(ShipPlayer2.x + 20, ShipPlayer2.y + 100);
+            		orbP2.body.velocity.x = orbRandom;
+            		orbP2.body.velocity.y = 400 + orbRandom + (400*weaponSpeedP2);
+            		
+            		orbTimeP2 = game.time.now + 50 - (50*fireRateP2);
+        		}
+        	}
+        }
+        
+        function fireLaserP2() {
+        	laserP2 = lasersP2.getFirstExists(false);
+        	if (game.time.now > laserTimeP2){
+        		if (laserP2){
+        			laserFire.play();
+        			laserP2.reset(ShipPlayer2.x + 20, ShipPlayer2.y + 100);
+        			laserP2.body.velocity.y = 250 + (250*weaponSpeedP2);
+        			
+        			laserTimeP2 = game.time.now + 350 - (350*fireRateP2);
+        		}
+        	}
+        }
+        
+        function fireMissileP2() {
+        	missileP2 = missilesP2.getFirstExists(false);
+        	if (game.time.now > missileTimeP2){
+        		if (missileP2){
+        			missileFire.play();
+        			missileP2.reset(ShipPlayer2.x + 20, ShipPlayer2.y + 100);
+        			missileP2.body.velocity.y = 150 + (150*weaponSpeedP2);
+        			
+        			missileTimeP2 = game.time.now + 800 - (800*fireRateP2);
+        		}
+        	}
+        }
+        //END OF GAME!
+    </script>
+
+</body>
+
+</html>

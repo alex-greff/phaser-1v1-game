@@ -1,0 +1,41 @@
+        	
+        	
+        //Collision
+        	//OrbP1
+        	//game.physics.arcade.overlap(orbsP1, ShipPlayer2, OrbP1Collision, null, this);
+        	//if shipPlayer2.overlap(orbsP1){
+        	//	healthTextP2.text = health - 1;
+        	//}
+        	//game.physics.arcade.overlap(orbsP1, ShipPlayer2, OrbP1Collision, null, this);
+        	//game.physics.arcade.overlap(enemyBullets, player, enemyHitsPlayer, null, this);
+        	
+        	//if (orbP1.x > ShipPlayer2.x && orbP1.x < ShipPlayer2.x + 50 && orbP1.y > ShipPlayer2.x && orbP1.y < ShipPlayer2.y + 100){
+        		
+        	//}
+        	//if (ShipPlayer2.alive){
+        		//game.physics.arcade.overlap(orbsP1, ShipPlayer2, OrbP1Collision, null this);
+        		
+        		//var test = game.add.text(200, 200, 'True', { font: '16px Stencil', fill: '#fff' });
+        	//}
+        	//game.physics.arcade.collide(ShipPlayerP2, orbsP1, collisionHandler, null, this);
+        	
+        	//for (var x=0; x<orbMax; x++){
+        		//orbP1 = orbsP1.getAt(y);
+        		//if (ShipPlayer2.overlap(orbP1)){
+        		//	var test = game.add.text(200, 200, 'True', { font: '16px Stencil', fill: '#fff' });
+        		//}
+        	//}
+        	//orbsP1 ShipPlayer2
+        	
+        	//function collisionHandler (ShipPlayerP2, orbP1) {
+
+            //  If the player collides with the chillis then they get eaten :)
+            //  The chilli frame ID is 17
+
+        //}
+      //Collision handlers
+		//function OrbP1Collision(ShipPlayer2, orbsP1)) {
+			//orbP1.kill();
+		//	orbP1.destroy();
+			//healthTextP2.text = health - 1;	
+		//}

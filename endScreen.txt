@@ -1,0 +1,92 @@
+<html>
+
+<body>
+    <script type="text/javascript" src="build/phaser.min.js"></script>
+    <script type="text/javascript" src="build/phaser.js"></script>
+    <script>
+        var game = new Phaser.Game(800, 600, Phaser.AUTO, 'phaser-example', {
+            preload: preload,
+            create: create,
+            update: update,
+            render: render
+        });
+        
+        //Import variables
+        P1Win = localStorage.getItem("P1Win");
+        P2Win = localStorage.getItem("P2Win");
+		
+        //Background
+    	var bg;
+    	
+    	//Text variables
+    	var scoreTitle;
+    	var score;
+    	var theEnd;
+    	var winner;
+    	var menuButton;
+    	var restartButton;
+    	var resetButton;
+    	var popoutButton;
+
+        function preload() {
+			game.load.image('background', 'EndScreen.png');
+			game.load.spritesheet("menuButtonSheet", "MenuButton.png", 256, 80, 3);
+			game.load.spritesheet('restartButtonSheet', 'ReplayButton.png', 256, 256, 3);
+			game.load.spritesheet('resetButtonSheet', 'ResetButton.png', 150, 50, 3);
+			game.load.spritesheet("popoutButtonSheet", "PopoutButton.png", 20, 20, 3);
+			
+        }
+
+        function create() {
+        	
+        	bg=game.add.sprite(0,0, "background");
+        	theEnd = game.add.text(265, 30, 'The end ', { font: '36px Stencil', fill: '#FFFFFF' });
+        	
+        //Check who won
+        	if (P1Win == 1){
+        		winner = game.add.text(265, 80, 'Winner of this match is player 1! ', { font: '24px Stencil', fill: '#00A3FF' });	
+        	}
+        	
+        	else if (P2Win == 1){
+        		winner = game.add.text(265, 80, 'Winner of this match is player 2 ', { font: '24px Stencil', fill: '#FF0000' });
+        	}
+        	
+        //Add buttons
+        	menuButton = game.add.button(550, 500, 'menuButtonSheet', MenuButtonClick , this, 2, 1, 0);
+        	restartButton = game.add.button(550, 250, 'restartButtonSheet', RestartButtonClick , this, 2, 1, 0);
+        	game.scale.fullScreenScaleMode = Phaser.ScaleManager.EXACT_FIT;
+            popoutButton = game.add.button(775, 5, "popoutButtonSheet", PopoutButtonClick, this, 2, 1, 0);
+        }
+        
+        //Load menu
+        function MenuButtonClick(){
+        	window.location.href = "menuScreen.html";
+        }
+        
+        //Load game
+        function RestartButtonClick(){
+        	window.location.href = "mainGame.html";
+        }
+        
+        //Full screen
+        function PopoutButtonClick() {
+            if (game.scale.isFullScreen){
+                game.scale.stopFullScreen();
+            }
+            else{
+                game.scale.startFullScreen(false);
+            }
+		}
+
+        function update() {
+        	
+        }
+
+        function render() {
+
+        }
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,275 @@
+<!--Game contros page-->
+<html>
+   <head>
+		<!--Table style and customization-->
+		<style>
+		table {
+			width:100%;
+		}
+		table, th, td {
+			border: 10px solid white;
+			border-collapse: collapse;
+		}
+		th, td {
+			padding: 5px;
+			text-align: left;
+		}
+		table#t01 tr:nth-child(even) {
+			background-color: #FF8000;
+		}
+		table#t01 tr:nth-child(odd) {
+		   background-color:#0B0B61;
+		}
+		table#t01 th	{
+			background-color: white;
+			color: white;
+		}
+		table#t01 tr	{
+			color: white;
+		}
+		</style>
+	</head>
+	<!--Background for page-->
+	<body background="images/background.jpg">
+	
+	
+	<!--Title-->
+		<center>
+				<img src="images/controlTitle.png">
+		</center>
+	
+	<!--buttons for website for easier website access-->
+				
+			<div style="position:absolute;top:6%;right:35%;">
+				<style>
+				<!--Button customization-->
+				ul#menu {
+				padding: 0;
+				}
+				ul#menu li {
+				display: inline;
+				}
+				ul#menu li a {
+				background-color:black;
+				color:#A4A4A4;
+				padding: 10px 20px;
+				text-decoration: none;
+				border-radius: 4px 4px 0 0;
+				}
+				ul#menu li a:hover {
+				background-color:transparent;
+				color:white;
+				text-decoration: underline;
+				}
+			</style>
+			</head>
+			<!--Button Links-->			
+			<ul id="menu">
+			<li>
+				<a href="index.html">Home
+				</a>
+			</li>
+			<li>
+				<a href="menuScreen.html">The Game          
+				</a>
+			</li>
+			<li>
+				<a href="GameInfo.html">Game Information
+				</a>
+			</li>
+			<li>
+				<a href="control.html">Game Controls
+				</a>
+			</li>
+			<li>
+				<a href="GameCode.html"> Source Code
+				</a>
+			</li>
+		</div>
+			<hr>
+			<br>
+			<!--Introduction to page-->
+			<font color="FFFFFF">
+				<center>	
+					<h2> Now to play this spectacular game!
+						<br>
+						You need to know the controls.
+					</h2>
+				</center>
+			</font>
+	<!--table for controls-->
+			<!--table's absolute location-->
+			<div style="position:absolute;top:20%;left:40%;">
+				
+				<!--table id for CSS code identification-->
+				<table id="t01">
+					<!--table headings-->
+					<tr>
+						<td>Picture and <br> Descrpition</td>
+						<td>Player 1 Controls</td>		
+						<td>Player 2 Controls</td>
+					</tr>
+					<!--Row 1-->
+						<!--movement picture-->
+					<tr>
+						<td>
+							<br>
+							<img src="images/spaceship_p1.png">
+							<br>
+							Movement
+							<br>
+						</td>
+						<!--Player 1 movement controls-->
+						<td> 
+							<br>
+							A=Left
+							<br>
+							S=Down
+							<br>
+							D=Right
+							<br>
+							W=Up
+							<br>
+						</td>
+						<!--Player 2 movement controls-->
+						<td>
+							<br>
+							P=UP
+							<BR>
+							L=LEFT
+							<BR>
+							:=Down
+							<BR>
+							'=RIGHT
+							<br>
+					</tr>
+					<!--Row 2-->
+						<!-- Missile Fire -->
+					<tr>
+						<td>
+							<!--Missile picture-->
+							<br>
+							<img src="images/Missile_single.png">
+							<br>
+							Missiles
+							<br>
+						</td>
+						<!--Player 1 missile fire controls-->
+						<td>
+							<br>
+							H=Missile Fire
+							<br>
+						</td>
+						<!--Player 2 movement controls-->
+						<td>
+							<br>
+							Right <br> Arrow = Missile Fire
+							<br>
+						</td>
+					</tr>
+					<!--Row 3-->
+						<!--Orb fire-->
+					<tr>
+						<td>
+							<!--Orb picture-->
+							<br>
+							<img src="images/Orb_single.png">
+							<br>
+							Orbs
+						</td>
+						<!--Player 1 orb fire controls-->
+						<td>
+							<br>
+							F=Orb Fire
+							<br>
+						</td>
+						<!--Player 2 orb fire controls-->
+						<td>
+							<br>
+							Left <br> Arrow = Orb Fire
+							<br>
+						</td>
+					</tr>
+					<!--Row 4-->
+					<tr>
+						<td>
+							<!--Laser picture-->
+							<br>
+							<img src="images/Laser_single.png">
+							<br>
+							Lasers
+						</td>
+						<!--Player 1 laser fire controls-->
+						<td>
+							<br>
+							G = Laser Fire
+							<br>
+						</td>
+						<!--Player 2 laser fire controls-->
+						<td>
+							<br>
+							Down <br> Arrow = Laser Fire
+							<br>
+						</td>
+					<tr>
+					<!--Asteroid tips-->
+						<td>
+							<!--Asteroid picture-->
+							<br>
+							<img src="images/Asteroid_2_yellow.png">
+							<br>
+							Tip for 
+							<br>
+							yellow asteroids
+						</td>
+						<!-- Player 1 asteroid tip -->
+						<td>
+							<br>
+							Player 1 has the capability to
+							<br>
+							stop the asteroid by shooting
+							<br>
+							an orb at it with the button f
+							<br>
+							and then firing it at your 
+							<br>
+							opponent by shooting it with a 
+							<br>
+							laser with the button g
+							<br>
+							<br>
+							It is important to remember 
+							<br>
+							you can only do this with the 
+							<br>
+							yellow asteroids and no other
+						</td>
+						<!--Player 2 asteroid tip-->
+						<td>
+							<br>
+							Player 2 has the capability to
+							<br>
+							stop the asteroid by shooting
+							<br>
+							an orb at it with the left arrow key
+							<br>
+							and then firing it at your 
+							<br>
+							opponent by shooting it with a 
+							<br>
+							laser with the down arrow key
+							<br>
+							<br>
+							It is important to remember 
+							<br>
+							you can only do this with the 
+							<br>
+							yellow asteroids and no other
+						</td>
+					</tr>
+				 </font>
+				</table>
+				
+		
+	</body>
+</html>
